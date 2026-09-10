@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>영어 단어 공부</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: #f3f6fb;
+    color: #1f2937;
+}
+
+.app {
+    max-width: 700px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+header {
+    background: white;
+    border-radius: 22px;
+    padding: 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+}
+
+header h1 {
+    margin: 0 0 7px;
+    font-size: 27px;
+}
+
+header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.tab {
+    flex: 1;
+    border: none;
+    background: white;
+    color: #6b7280;
+    padding: 13px 8px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+}
+
+.tab.active {
+    background: #2563eb;
+    color: white;
+}
+
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+}
+
+.card {
+    background: white;
+    border-radius: 22px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+    margin-bottom: 18px;
+}
+
+.word-card {
+    text-align: center;
+    min-height: 310px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.category {
+    display: inline-block;
+    background: #eff6ff;
+    color: #2563eb;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.word {
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: #111827;
+}
+
+.pronunciation {
+    color: #9ca3af;
+    font-size: 15px;
+    margin-bottom: 22px;
+}
+
+.meaning {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2563eb;
+    margin-bottom: 18px;
+}
+
+.example {
+    color: #4b5563;
+    line-height: 1.6;
+    font-size: 15px;
+    max-width: 500px;
+}
+
+.example strong {
+    color: #111827;
+}
+
+.button-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+button {
+    font-family: inherit;
+}
+
+.main-btn {
+    flex: 1;
+    border: none;
+    padding: 15px;
+    border-radius: 14px;
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.main-btn:hover {
+    background: #1d4ed8;
+}
+
+.secondary-btn {
+    flex: 1;
+    border: none;
+    padding: 15px;
+    border-radius: 14px;
+    background: #e5e7eb;
+    color: #374151;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.progress-box {
+    background: white;
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 9px;
+    color: #6b7280;
+}
+
+.progress-bar {
+    height: 9px;
+    background: #e5e7eb;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #2563eb;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+.quiz-question {
+    text-align: center;
+    padding: 10px 0 20px;
+}
+
+.quiz-question .small {
+    color: #9ca3af;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.quiz-question h2 {
+    font-size: 30px;
+    margin: 0;
+}
+
+.choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.choice {
+    border: 2px solid #e5e7eb;
+    background: white;
+    padding: 18px 10px;
+    border-radius: 15px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.choice:hover {
+    border-color: #93c5fd;
+    background: #eff6ff;
+}
+
+.choice.correct {
+    background: #dcfce7;
+    border-color: #22c55e;
+    color: #166534;
+}
+
+.choice.wrong {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #991b1b;
+}
+
+.quiz-result {
+    text-align: center;
+    padding: 25px 10px;
+}
+
+.result-score {
+    font-size: 50px;
+    font-weight: 800;
+    color: #2563eb;
+    margin: 10px 0;
+}
+
+.result-message {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.word-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.word-item {
+    background: #f9fafb;
+    border-radius: 15px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.word-item-left {
+    min-width: 0;
+}
+
+.word-item .english {
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.word-item .korean {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.star-btn {
+    border: none;
+    background: transparent;
+    font-size: 23px;
+    cursor: pointer;
+}
+
+.empty {
+    text-align: center;
+    padding: 30px 10px;
+    color: #9ca3af;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.stat {
+    background: white;
+    border-radius: 17px;
+    padding: 17px 10px;
+    text-align: center;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: 800;
+    color: #2563eb;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.feedback {
+    text-align: center;
+    min-height: 25px;
+    font-weight: 700;
+    margin: 15px 0;
+}
+
+.feedback.correct-text {
+    color: #16a34a;
+}
+
+.feedback.wrong-text {
+    color: #dc2626;
+}
+
+@media (max-width: 520px) {
+    .app {
+        padding: 12px;
+    }
+
+    header {
+        padding: 20px;
+    }
+
+    .word {
+        font-size: 35px;
+    }
+
+    .choices {
+        grid-template-columns: 1fr;
+    }
+
+    .stats {
+        gap: 7px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <header>
+        <h1>📚 영어 단어 공부</h1>
+        <p>필수 단어를 익히고 퀴즈로 실력을 확인해 보세요</p>
+    </header>
+
+    <div class="tabs">
+        <button class="tab active" onclick="showScreen('study', this)">단어 학습</button>
+        <button class="tab" onclick="showScreen('quiz', this)">퀴즈</button>
+        <button class="tab" onclick="showScreen('saved', this)">단어장</button>
+    </div>
+
+    <section id="study" class="screen active">
+
+        <div class="progress-box">
+            <div class="progress-info">
+                <span id="studyProgressText">1 / 20</span>
+                <span>오늘의 단어</span>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="studyProgress"></div>
+            </div>
+        </div>
+
+        <div class="card word-card">
+
+            <div class="category">필수 어휘</div>
+
+            <div class="word" id="wordEnglish">achieve</div>
+
+            <div class="pronunciation" id="wordPronunciation">
+                [əˈtʃiːv]
+            </div>
+
+            <div class="meaning" id="wordMeaning">
+                달성하다, 이루다
+            </div>
+
+            <div class="example" id="wordExample">
+                She worked hard to <strong>achieve</strong> her goal.
+                <br>
+                그녀는 목표를 이루기 위해 열심히 노력했다.
+            </div>
+
+        </div>
+
+        <div class="button-row">
+            <button class="secondary-btn" onclick="previousWord()">
+                ← 이전
+            </button>
+
+            <button class="main-btn" onclick="nextWord()">
+                다음 →
+            </button>
+        </div>
+
+        <div class="button-row">
+            <button class="secondary-btn" onclick="toggleSaved()">
+                ☆ 단어장에 저장
+            </button>
+
+            <button class="secondary-btn" onclick="speakWord()">
+                🔊 발음 듣기
+            </button>
+        </div>
+
+    </section>
+
+    <section id="quiz" class="screen">
+
+        <div class="stats">
+
+            <div class="stat">
+                <div class="stat-number" id="quizNumber">1</div>
+                <div class="stat-label">문제</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-number" id="correctCount">0</div>
+                <div class="stat-label">정답</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-number" id="wrongCount">0</div>
+                <div class="stat-label">오답</div>
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <div id="quizArea">
+
+                <div class="quiz-question">
+
+                    <div class="small">
+                        다음 단어의 뜻은?
+                    </div>
+
+                    <h2 id="quizWord">
+                        achieve
+                    </h2>
+
+                </div>
+
+                <div class="choices" id="choices"></div>
+
+                <div class="feedback" id="feedback"></div>
+
+                <button
+                    class="main-btn"
+                    id="nextQuizBtn"
+                    onclick="nextQuizQuestion()"
+                    style="display:none; width:100%;">
+                    다음 문제
+                </button>
+
+            </div>
+
+            <div id="quizResult" class="quiz-result" style="display:none;">
+
+                <div>퀴즈 완료!</div>
+
+                <div class="result-score" id="finalScore">
+                    0 / 10
+                </div>
+
+                <div class="result-message" id="resultMessage"></div>
+
+                <button class="main-btn" onclick="startQuiz()">
+                    다시 풀기
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section id="saved" class="screen">
+
+        <div class="card">
+
+            <h2 style="margin-top:0;">
+                ⭐ 나의 단어장
+            </h2>
+
+            <p style="color:#6b7280; font-size:14px;">
+                기억하고 싶은 단어를 저장해 보세요.
+            </p>
+
+            <div class="word-list" id="savedList"></div>
+
+        </div>
+
+    </section>
+
+</div>
+
+<script>
+
+const words = [
+    {
+        word: "achieve",
+        meaning: "달성하다, 이루다",
+        pronunciation: "[əˈtʃiːv]",
+        example: "She worked hard to achieve her goal.",
+        translation: "그녀는 목표를 이루기 위해 열심히 노력했다."
+    },
+    {
+        word: "affect",
+        meaning: "영향을 미치다",
+        pronunciation: "[əˈfekt]",
+        example: "Weather can affect our plans.",
+        translation: "날씨는 우리의 계획에 영향을 줄 수 있다."
+    },
+    {
+        word: "avoid",
+        meaning: "피하다",
+        pronunciation: "[əˈvɔɪd]",
+        example: "Try to avoid making the same mistake.",
+        translation: "같은 실수를 하는 것을 피하도록 노력해라."
+    },
+    {
+        word: "benefit",
+        meaning: "이익, 혜택",
+        pronunciation: "[ˈbenɪfɪt]",
+        example: "Exercise has many benefits.",
+        translation: "운동은 많은 이점이 있다."
+    },
+    {
+        word: "challenge",
+        meaning: "도전, 도전하다",
+        pronunciation: "[ˈtʃælɪndʒ]",
+        example: "Learning English can be a challenge.",
+        translation: "영어를 배우는 것은 도전이 될 수 있다."
+    },
+    {
+        word: "consider",
+        meaning: "고려하다",
+        pronunciation: "[kənˈsɪdər]",
+        example: "Please consider my idea.",
+        translation: "내 생각을 고려해 주세요."
+    },
+    {
+        word: "contain",
+        meaning: "포함하다",
+        pronunciation: "[kənˈteɪn]",
+        example: "This box contains many books.",
+        translation: "이 상자에는 많은 책이 들어 있다."
+    },
+    {
+        word: "depend",
+        meaning: "의존하다, 달려 있다",
+        pronunciation: "[dɪˈpend]",
+        example: "Success depends on your effort.",
+        translation: "성공은 너의 노력에 달려 있다."
+    },
+    {
+        word: "describe",
+        meaning: "묘사하다, 설명하다",
+        pronunciation: "[dɪˈskraɪb]",
+        example: "Can you describe the picture?",
+        translation: "그 그림을 설명할 수 있니?"
+    },
+    {
+        word: "environment",
+        meaning: "환경",
+        pronunciation: "[ɪnˈvaɪrənmənt]",
+        example: "We should protect the environment.",
+        translation: "우리는 환경을 보호해야 한다."
+    },
+    {
+        word: "experience",
+        meaning: "경험, 경험하다",
+        pronunciation: "[ɪkˈspɪəriəns]",
+        example: "Travel gives us new experiences.",
+        translation: "여행은 우리에게 새로운 경험을 준다."
+    },
+    {
+        word: "improve",
+        meaning: "향상시키다, 개선하다",
+        pronunciation: "[ɪmˈpruːv]",
+        example: "Reading can improve your English.",
+        translation: "독서는 너의 영어 실력을 향상시킬 수 있다."
+    },
+    {
+        word: "include",
+        meaning: "포함하다",
+        pronunciation: "[ɪnˈkluːd]",
+        example: "The price includes breakfast.",
+        translation: "가격에는 아침 식사가 포함되어 있다."
+    },
+    {
+        word: "increase",
+        meaning: "증가하다, 증가시키다",
+        pronunciation: "[ɪnˈkriːs]",
+        example: "The number of students increased.",
+        translation: "학생 수가 증가했다."
+    },
+    {
+        word: "opportunity",
+        meaning: "기회",
+        pronunciation: "[ˌɑːpərˈtuːnəti]",
+        example: "This is a great opportunity.",
+        translation: "이것은 좋은 기회이다."
+    },
+    {
+        word: "prepare",
+        meaning: "준비하다",
+        pronunciation: "[prɪˈper]",
+        example: "I need to prepare for the test.",
+        translation: "나는 시험을 준비해야 한다."
+    },
+    {
+        word: "protect",
+        meaning: "보호하다",
+        pronunciation: "[prəˈtekt]",
+        example: "We must protect nature.",
+        translation: "우리는 자연을 보호해야 한다."
+    },
+    {
+        word: "reduce",
+        meaning: "줄이다, 감소시키다",
+        pronunciation: "[rɪˈduːs]",
+        example: "We should reduce plastic waste.",
+        translation: "우리는 플라스틱 쓰레기를 줄여야 한다."
+    },
+    {
+        word: "require",
+        meaning: "요구하다, 필요로 하다",
+        pronunciation: "[rɪˈkwaɪər]",
+        example: "This job requires patience.",
+        translation: "이 일은 인내심을 필요로 한다."
+    },
+    {
+        word: "suggest",
+        meaning: "제안하다",
+        pronunciation: "[səˈdʒest]",
+        example: "He suggested a new idea.",
+        translation: "그는 새로운 아이디어를 제안했다."
+    }
+];
+
+let currentWord = 0;
+
+let savedWords = JSON.parse(
+    localStorage.getItem("savedWords") || "[]"
+);
+
+let quizWords = [];
+let quizIndex = 0;
+let correct = 0;
+let wrong = 0;
+let answered = false;
+
+function showScreen(screenId, button) {
+
+    document.querySelectorAll(".screen").forEach(screen => {
+        screen.classList.remove("active");
+    });
+
+    document.getElementById(screenId).classList.add("active");
+
+    document.querySelectorAll(".tab").forEach(tab => {
+        tab.classList.remove("active");
+    });
+
+    button.classList.add("active");
+
+    if (screenId === "saved") {
+        renderSavedWords();
+    }
+
+    if (screenId === "quiz") {
+        startQuiz();
+    }
+}
+
+function displayWord() {
+
+    const item = words[currentWord];
+
+    document.getElementById("wordEnglish").textContent =
+        item.word;
+
+    document.getElementById("wordPronunciation").textContent =
+        item.pronunciation;
+
+    document.getElementById("wordMeaning").textContent =
+        item.meaning;
+
+    document.getElementById("wordExample").innerHTML =
+        item.example.replace(
+            new RegExp(item.word, "gi"),
+            `<strong>${item.word}</strong>`
+        )
+        + "<br>"
+        + item.translation;
+
+    document.getElementById("studyProgressText").textContent =
+        `${currentWord + 1} / ${words.length}`;
+
+    document.getElementById("studyProgress").style.width =
+        `${((currentWord + 1) / words.length) * 100}%`;
+
+    updateSaveButton();
+}
+
+function nextWord() {
+
+    if (currentWord < words.length - 1) {
+        currentWord++;
+    } else {
+        currentWord = 0;
+    }
+
+    displayWord();
+}
+
+function previousWord() {
+
+    if (currentWord > 0) {
+        currentWord--;
+    } else {
+        currentWord = words.length - 1;
+    }
+
+    displayWord();
+}
+
+function toggleSaved() {
+
+    const word = words[currentWord].word;
+
+    if (savedWords.includes(word)) {
+        savedWords = savedWords.filter(item => item !== word);
+    } else {
+        savedWords.push(word);
+    }
+
+    localStorage.setItem(
+        "savedWords",
+        JSON.stringify(savedWords)
+    );
+
+    updateSaveButton();
+}
+
+function updateSaveButton() {
+
+    const button = document.querySelector(
+        "#study .button-row:last-child .secondary-btn"
+    );
+
+    if (!button) return;
+
+    const word = words[currentWord].word;
+
+    if (savedWords.includes(word)) {
+        button.textContent = "★ 단어장에 저장됨";
+    } else {
+        button.textContent = "☆ 단어장에 저장";
+    }
+}
+
+function renderSavedWords() {
+
+    const list = document.getElementById("savedList");
+
+    const saved = words.filter(item =>
+        savedWords.includes(item.word)
+    );
+
+    if (saved.length === 0) {
+
+        list.innerHTML = `
+            <div class="empty">
+                아직 저장한 단어가 없어요.<br>
+                공부하면서 기억하고 싶은 단어를 저장해 보세요.
+            </div>
+        `;
+
+        return;
+    }
+
+    list.innerHTML = saved.map(item => `
+        <div class="word-item">
+
+            <div class="word-item-left">
+                <div class="english">${item.word}</div>
+                <div class="korean">${item.meaning}</div>
+            </div>
+
+            <button
+                class="star-btn"
+                onclick="removeSaved('${item.word}')">
+                ★
+            </button>
+
+        </div>
+    `).join("");
+}
+
+function removeSaved(word) {
+
+    savedWords =
+        savedWords.filter(item => item !== word);
+
+    localStorage.setItem(
+        "savedWords",
+        JSON.stringify(savedWords)
+    );
+
+    renderSavedWords();
+    updateSaveButton();
+}
+
+function speakWord() {
+
+    const word = words[currentWord].word;
+
+    if ("speechSynthesis" in window) {
+
+        const speech =
+            new SpeechSynthesisUtterance(word);
+
+        speech.lang = "en-US";
+        speech.rate = 0.85;
+
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(speech);
+    }
+}
+
+function shuffle(array) {
+
+    const copied = [...array];
+
+    for (let i = copied.length - 1; i > 0; i--) {
+
+        const j =
+            Math.floor(Math.random() * (i + 1));
+
+        [copied[i], copied[j]] =
+        [copied[j], copied[i]];
+    }
+
+    return copied;
+}
+
+function startQuiz() {
+
+    quizWords =
+        shuffle(words).slice(0, 10);
+
+    quizIndex = 0;
+    correct = 0;
+    wrong = 0;
+
+    document.getElementById("quizArea").style.display =
+        "block";
+
+    document.getElementById("quizResult").style.display =
+        "none";
+
+    updateQuizStats();
+    showQuizQuestion();
+}
+
+function showQuizQuestion() {
+
+    answered = false;
+
+    const current =
+        quizWords[quizIndex];
+
+    document.getElementById("quizWord").textContent =
+        current.word;
+
+    document.getElementById("feedback").textContent = "";
+
+    document.getElementById("feedback").className =
+        "feedback";
+
+    document.getElementById("nextQuizBtn").style.display =
+        "none";
+
+    const wrongChoices =
+        shuffle(
+            words.filter(item =>
+                item.word !== current.word
+            )
+        ).slice(0, 3);
+
+    const choices =
+        shuffle([
+            current,
+            ...wrongChoices
+        ]);
+
+    const choicesContainer =
+        document.getElementById("choices");
+
+    choicesContainer.innerHTML = "";
+
+    choices.forEach(choice => {
+
+        const button =
+            document.createElement("button");
+
+        button.className = "choice";
+
+        button.textContent =
+            choice.meaning;
+
+        button.onclick = () =>
+            answerQuiz(button, choice.word);
+
+        choicesContainer.appendChild(button);
+    });
+
+    updateQuizStats();
+}
+
+function answerQuiz(button, selectedWord) {
+
+    if (answered) return;
+
+    answered = true;
+
+    const current =
+        quizWords[quizIndex];
+
+    const allButtons =
+        document.querySelectorAll(".choice");
+
+    allButtons.forEach(btn => {
+        btn.disabled = true;
+    });
+
+    if (selectedWord === current.word) {
+
+        correct++;
+
+        button.classList.add("correct");
+
+        const feedback =
+            document.getElementById("feedback");
+
+        feedback.textContent =
+            "정답이에요!";
+
+        feedback.className =
+            "feedback correct-text";
+
+    } else {
+
+        wrong++;
+
+        button.classList.add("wrong");
+
+        allButtons.forEach(btn => {
+
+            if (btn.textContent === current.meaning) {
+                btn.classList.add("correct");
+            }
+
+        });
+
+        const feedback =
+            document.getElementById("feedback");
+
+        feedback.textContent =
+            `오답! 정답은 "${current.meaning}"이에요.`;
+
+        feedback.className =
+            "feedback wrong-text";
+    }
+
+    updateQuizStats();
+
+    document.getElementById("nextQuizBtn").style.display =
+        "block";
+}
+
+function nextQuizQuestion() {
+
+    quizIndex++;
+
+    if (quizIndex >= quizWords.length) {
+        showQuizResult();
+    } else {
+        showQuizQuestion();
+    }
+}
+
+function updateQuizStats() {
+
+    document.getElementById("quizNumber").textContent =
+        Math.min(
+            quizIndex + 1,
+            quizWords.length || 1
+        );
+
+    document.getElementById("correctCount").textContent =
+        correct;
+
+    document.getElementById("wrongCount").textContent =
+        wrong;
+}
+
+function showQuizResult() {
+
+    document.getElementById("quizArea").style.display =
+        "none";
+
+    document.getElementById("quizResult").style.display =
+        "block";
+
+    document.getElementById("finalScore").textContent =
+        `${correct} / ${quizWords.length}`;
+
+    const percentage =
+        (correct / quizWords.length) * 100;
+
+    let message = "";
+
+    if (percentage === 100) {
+        message =
+            "완벽해요! 단어 실력이 아주 좋아요.";
+    } else if (percentage >= 80) {
+        message =
+            "잘했어요! 조금만 더 복습하면 완벽해요.";
+    } else if (percentage >= 60) {
+        message =
+            "좋아요! 틀린 단어를 다시 공부해 보세요.";
+    } else {
+        message =
+            "괜찮아요! 단어 학습부터 다시 해볼까요?";
+    }
+
+    document.getElementById("resultMessage").textContent =
+        message;
+}
+
+displayWord();
+
+</script>
+
+</body>
+</html>
