@@ -1,0 +1,914 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>더 좋은 공부 습관</title>
+  <style>
+    :root {
+      --navy: #243b64;
+      --blue: #4b7bec;
+      --light-blue: #eaf2ff;
+      --mint: #dff7ed;
+      --green: #16845b;
+      --yellow: #fff4c8;
+      --pink: #ffe8ee;
+      --red: #b73850;
+      --ink: #243041;
+      --muted: #64748b;
+      --line: #dce4ef;
+      --paper: #ffffff;
+      --background: #f5f8fc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--ink);
+      font-family: "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    .app {
+      width: min(920px, calc(100% - 28px));
+      margin: 28px auto 42px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--navy);
+      font-size: clamp(1.55rem, 4vw, 2.25rem);
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .progress-wrap {
+      margin: 20px 0;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar {
+      height: 11px;
+      border-radius: 20px;
+      background: #dfe7f3;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 25%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #4b7bec, #6c9dff);
+      transition: width 0.35s ease;
+    }
+
+    .card {
+      display: none;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: clamp(20px, 4vw, 34px);
+      box-shadow: 0 7px 22px rgba(36, 59, 100, 0.07);
+    }
+
+    .card.active {
+      display: block;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: clamp(1.3rem, 3vw, 1.75rem);
+    }
+
+    .instruction {
+      margin: 0 0 22px;
+      color: var(--muted);
+    }
+
+    .passage {
+      padding: 20px;
+      border-radius: 13px;
+      background: #f8fbff;
+      border-left: 5px solid var(--blue);
+      font-family: Arial, sans-serif;
+      font-size: 1.05rem;
+      line-height: 1.8;
+    }
+
+    mark {
+      background: var(--yellow);
+      color: var(--ink);
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .word-bank {
+      margin-top: 22px;
+      padding: 16px;
+      border-radius: 13px;
+      background: var(--light-blue);
+    }
+
+    .word-bank h3 {
+      margin: 0 0 9px;
+      color: var(--navy);
+      font-size: 1rem;
+    }
+
+    .expression-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .expression-chip {
+      border: 1px solid #bad0f7;
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: white;
+      font-family: Arial, sans-serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .question {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .question:last-of-type {
+      border-bottom: 0;
+    }
+
+    .question p {
+      margin: 0 0 11px;
+      font-weight: 700;
+    }
+
+    .options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 10px;
+      color: var(--ink);
+      font: inherit;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s, background 0.15s;
+    }
+
+    .option:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: var(--blue);
+      background: #f8fbff;
+    }
+
+    .option:disabled {
+      cursor: default;
+    }
+
+    .option.correct {
+      border-color: #58b88e;
+      background: var(--mint);
+      color: #075f3c;
+      font-weight: 700;
+    }
+
+    .option.wrong {
+      border-color: #ed9aaa;
+      background: var(--pink);
+      color: var(--red);
+    }
+
+    .feedback {
+      min-height: 25px;
+      margin: 9px 0 0;
+      font-size: 0.94rem;
+      font-weight: 700;
+    }
+
+    .feedback.good {
+      color: var(--green);
+    }
+
+    .feedback.bad {
+      color: var(--red);
+    }
+
+    .practice-item {
+      padding: 17px;
+      margin: 12px 0;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fcfdff;
+    }
+
+    .practice-item p {
+      margin: 0 0 11px;
+      font-family: Arial, sans-serif;
+      font-weight: 700;
+    }
+
+    .blank {
+      display: inline-block;
+      width: 145px;
+      height: 1.25em;
+      margin: 0 3px;
+      vertical-align: -0.1em;
+      border-bottom: 2px solid var(--blue);
+    }
+
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #bfcce0;
+      border-radius: 10px;
+      padding: 11px;
+      color: var(--ink);
+      background: white;
+      font: inherit;
+    }
+
+    select {
+      font-family: Arial, sans-serif;
+    }
+
+    select:focus,
+    textarea:focus {
+      outline: 3px solid rgba(75, 123, 236, 0.2);
+      border-color: var(--blue);
+    }
+
+    .check-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .small-button,
+    .next-button,
+    .back-button,
+    .restart-button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 15px;
+      color: white;
+      background: var(--blue);
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .back-button {
+      color: var(--navy);
+      background: #e8eef8;
+    }
+
+    .small-button:hover,
+    .next-button:hover,
+    .back-button:hover,
+    .restart-button:hover {
+      filter: brightness(0.95);
+    }
+
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .next-button {
+      min-width: 145px;
+      font-size: 1rem;
+    }
+
+    .next-button:disabled {
+      background: #aab7cd;
+      cursor: not-allowed;
+    }
+
+    .tip {
+      margin-top: 18px;
+      padding: 13px 15px;
+      border-radius: 10px;
+      background: var(--yellow);
+      color: #705400;
+      font-size: 0.94rem;
+    }
+
+    .writing-box {
+      margin-top: 14px;
+    }
+
+    textarea {
+      min-height: 145px;
+      resize: vertical;
+      font-family: Arial, "Noto Sans KR", sans-serif;
+    }
+
+    .model-box {
+      margin-top: 16px;
+      padding: 15px;
+      border-radius: 12px;
+      background: var(--light-blue);
+      color: var(--navy);
+    }
+
+    .model-box strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .example-sentence {
+      font-family: Arial, sans-serif;
+    }
+
+    .celebration {
+      text-align: center;
+      padding: 10px 0 6px;
+    }
+
+    .celebration .emoji {
+      font-size: 3.5rem;
+    }
+
+    .score-box {
+      margin: 18px auto;
+      max-width: 340px;
+      padding: 17px;
+      border-radius: 13px;
+      background: var(--mint);
+      color: #075f3c;
+      font-size: 1.08rem;
+      font-weight: 700;
+    }
+
+    .saved-writing {
+      margin-top: 18px;
+      padding: 15px;
+      border: 1px dashed #aabbd6;
+      border-radius: 12px;
+      text-align: left;
+      white-space: pre-wrap;
+      background: #fafcff;
+      font-family: Arial, "Noto Sans KR", sans-serif;
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        width: min(100% - 20px, 920px);
+        margin-top: 16px;
+      }
+
+      .card {
+        padding: 20px;
+        border-radius: 14px;
+      }
+
+      .progress-label {
+        font-size: 0.87rem;
+      }
+
+      .passage {
+        padding: 15px;
+      }
+
+      .navigation {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .next-button,
+      .back-button {
+        width: 100%;
+      }
+
+      .blank {
+        width: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>더 좋은 공부 습관</h1>
+      <p class="subtitle">읽고, 확인하고, 연습하고, 나의 습관을 영어로 써 보세요. 약 10분 활동입니다.</p>
+    </header>
+
+    <section class="progress-wrap" aria-label="학습 진행 상황">
+      <div class="progress-label">
+        <span id="stepText">1 / 4 단계: 읽기</span>
+        <span id="scoreText">점수: 0 / 0</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </section>
+
+    <section class="card active" id="step1">
+      <h2>1. 읽기</h2>
+      <p class="instruction">지수의 이야기를 읽어 보세요. 노란색으로 표시된 영어 표현에 집중하세요.</p>
+
+      <div class="passage">
+        Jisoo wanted to improve her study habits before the exam period. She began to
+        <mark>keep track of</mark> how long she studied each day. She also learned when to
+        <mark>take a break</mark> instead of studying for too long. While studying, she tried
+        to <mark>stay away from</mark> her phone and made sure to
+        <mark>get enough sleep</mark>. When she felt stressed, she learned how to
+        <mark>deal with</mark> it by taking a short walk. After several weeks, she found it
+        easier to <mark>stick to</mark> her new routine.
+      </div>
+
+      <div class="word-bank">
+        <h3>오늘의 영어 표현</h3>
+        <div class="expression-list">
+          <span class="expression-chip">keep track of</span>
+          <span class="expression-chip">take a break</span>
+          <span class="expression-chip">stay away from</span>
+          <span class="expression-chip">get enough sleep</span>
+          <span class="expression-chip">deal with</span>
+          <span class="expression-chip">stick to</span>
+        </div>
+      </div>
+
+      <div class="tip">
+        팁: 모든 단어를 알 필요는 없어요. 글의 중요한 내용을 생각하며 읽어 보세요.
+      </div>
+
+      <div class="navigation">
+        <span></span>
+        <button class="next-button" onclick="goToStep(2)">다음: 의미 확인 →</button>
+      </div>
+    </section>
+
+    <section class="card" id="step2">
+      <h2>2. 의미 확인</h2>
+      <p class="instruction">가장 알맞은 답을 선택하세요. 바로 피드백을 받을 수 있어요.</p>
+
+      <div class="question" data-question="q1">
+        <p>1. <strong>keep track of</strong>는 무슨 뜻인가요?</p>
+        <div class="options">
+          <button class="option" onclick="answerQuestion('q1', this, false)">무언가를 잊어버리다</button>
+          <button class="option" onclick="answerQuestion('q1', this, true)">무언가를 확인하고 기록하다</button>
+          <button class="option" onclick="answerQuestion('q1', this, false)">무언가를 그만두다</button>
+        </div>
+        <div class="feedback" id="feedback-q1"></div>
+      </div>
+
+      <div class="question" data-question="q2">
+        <p>2. 지수는 왜 짧은 산책을 했나요?</p>
+        <div class="options">
+          <button class="option" onclick="answerQuestion('q2', this, false)">휴대폰을 사용하고 싶어서</button>
+          <button class="option" onclick="answerQuestion('q2', this, true)">스트레스를 해결하기 위해서</button>
+          <button class="option" onclick="answerQuestion('q2', this, false)">더 오래 자고 싶어서</button>
+        </div>
+        <div class="feedback" id="feedback-q2"></div>
+      </div>
+
+      <div class="question" data-question="q3">
+        <p>3. 몇 주 후에 어떤 일이 있었나요?</p>
+        <div class="options">
+          <button class="option" onclick="answerQuestion('q3', this, true)">새로운 생활 습관을 지키기가 더 쉬워졌다.</button>
+          <button class="option" onclick="answerQuestion('q3', this, false)">매일 공부하는 것을 그만두었다.</button>
+          <button class="option" onclick="answerQuestion('q3', this, false)">공부할 때 휴대폰을 더 많이 사용했다.</button>
+        </div>
+        <div class="feedback" id="feedback-q3"></div>
+      </div>
+
+      <div class="navigation">
+        <button class="back-button" onclick="goToStep(1)">← 이전: 읽기</button>
+        <button class="next-button" id="step2Next" onclick="goToStep(3)" disabled>다음: 표현 연습 →</button>
+      </div>
+    </section>
+
+    <section class="card" id="step3">
+      <h2>3. 표현 연습</h2>
+      <p class="instruction">빈칸에 알맞은 영어 표현을 고르세요. 선택한 뒤 ‘확인하기’를 누르세요.</p>
+
+      <div class="word-bank">
+        <h3>표현 상자</h3>
+        <div class="expression-list">
+          <span class="expression-chip">keep track of</span>
+          <span class="expression-chip">take a break</span>
+          <span class="expression-chip">stay away from</span>
+          <span class="expression-chip">get enough sleep</span>
+          <span class="expression-chip">deal with</span>
+          <span class="expression-chip">stick to</span>
+        </div>
+      </div>
+
+      <div class="practice-item">
+        <p>1. I write my homework in a planner to <span class="blank"></span> my tasks.</p>
+        <select id="practice1" class="practice-select">
+          <option value="">영어 표현을 고르세요</option>
+          <option value="keep track of">keep track of</option>
+          <option value="take a break">take a break</option>
+          <option value="stay away from">stay away from</option>
+        </select>
+        <div class="check-row">
+          <button class="small-button" onclick="checkPractice(1, 'keep track of')">확인하기</button>
+          <span class="feedback" id="practice-feedback-1"></span>
+        </div>
+      </div>
+
+      <div class="practice-item">
+        <p>2. After 40 minutes of study, it is good to <span class="blank"></span>.</p>
+        <select id="practice2" class="practice-select">
+          <option value="">영어 표현을 고르세요</option>
+          <option value="stick to">stick to</option>
+          <option value="take a break">take a break</option>
+          <option value="deal with">deal with</option>
+        </select>
+        <div class="check-row">
+          <button class="small-button" onclick="checkPractice(2, 'take a break')">확인하기</button>
+          <span class="feedback" id="practice-feedback-2"></span>
+        </div>
+      </div>
+
+      <div class="practice-item">
+        <p>3. I put my phone in another room to <span class="blank"></span> it while I study.</p>
+        <select id="practice3" class="practice-select">
+          <option value="">영어 표현을 고르세요</option>
+          <option value="stay away from">stay away from</option>
+          <option value="get enough sleep">get enough sleep</option>
+          <option value="keep track of">keep track of</option>
+        </select>
+        <div class="check-row">
+          <button class="small-button" onclick="checkPractice(3, 'stay away from')">확인하기</button>
+          <span class="feedback" id="practice-feedback-3"></span>
+        </div>
+      </div>
+
+      <div class="practice-item">
+        <p>4. Students need to <span class="blank"></span> before an important test.</p>
+        <select id="practice4" class="practice-select">
+          <option value="">영어 표현을 고르세요</option>
+          <option value="get enough sleep">get enough sleep</option>
+          <option value="take a break">take a break</option>
+          <option value="stick to">stick to</option>
+        </select>
+        <div class="check-row">
+          <button class="small-button" onclick="checkPractice(4, 'get enough sleep')">확인하기</button>
+          <span class="feedback" id="practice-feedback-4"></span>
+        </div>
+      </div>
+
+      <div class="practice-item">
+        <p>5. Talking to a friend can help you <span class="blank"></span> a problem.</p>
+        <select id="practice5" class="practice-select">
+          <option value="">영어 표현을 고르세요</option>
+          <option value="deal with">deal with</option>
+          <option value="stay away from">stay away from</option>
+          <option value="keep track of">keep track of</option>
+        </select>
+        <div class="check-row">
+          <button class="small-button" onclick="checkPractice(5, 'deal with')">확인하기</button>
+          <span class="feedback" id="practice-feedback-5"></span>
+        </div>
+      </div>
+
+      <div class="practice-item">
+        <p>6. It is easier to improve when you <span class="blank"></span> your plan every day.</p>
+        <select id="practice6" class="practice-select">
+          <option value="">영어 표현을 고르세요</option>
+          <option value="stick to">stick to</option>
+          <option value="take a break">take a break</option>
+          <option value="get enough sleep">get enough sleep</option>
+        </select>
+        <div class="check-row">
+          <button class="small-button" onclick="checkPractice(6, 'stick to')">확인하기</button>
+          <span class="feedback" id="practice-feedback-6"></span>
+        </div>
+      </div>
+
+      <div class="navigation">
+        <button class="back-button" onclick="goToStep(2)">← 이전: 의미 확인</button>
+        <button class="next-button" id="step3Next" onclick="goToStep(4)" disabled>다음: 나의 문장 쓰기 →</button>
+      </div>
+    </section>
+
+    <section class="card" id="step4">
+      <h2>4. 나의 공부 습관</h2>
+      <p class="instruction">
+        나의 공부 습관에 대해 영어로 2~3문장을 써 보세요.
+        오늘 배운 영어 표현을 <strong>2개 이상</strong> 사용하세요.
+      </p>
+
+      <div class="word-bank">
+        <h3>사용할 수 있는 영어 표현</h3>
+        <div class="expression-list">
+          <span class="expression-chip">keep track of</span>
+          <span class="expression-chip">take a break</span>
+          <span class="expression-chip">stay away from</span>
+          <span class="expression-chip">get enough sleep</span>
+          <span class="expression-chip">deal with</span>
+          <span class="expression-chip">stick to</span>
+        </div>
+      </div>
+
+      <div class="model-box">
+        <strong>예시</strong>
+        <div class="example-sentence">
+          I keep track of my homework in a notebook. I try to stay away from my phone when I study.
+          I also take a break after 30 minutes.
+        </div>
+      </div>
+
+      <div class="tip">
+        예시 문장을 그대로 쓰지 말고, 나의 실제 공부 습관에 맞는 새로운 문장을 만들어 보세요.
+      </div>
+
+      <div class="writing-box">
+        <label for="studentWriting"><strong>나의 영어 문장:</strong></label>
+        <textarea id="studentWriting" placeholder="여기에 나만의 영어 문장을 써 보세요."></textarea>
+      </div>
+
+      <div class="check-row">
+        <button class="small-button" onclick="finishActivity()">활동 완료하기</button>
+        <span class="feedback" id="writing-feedback"></span>
+      </div>
+
+      <div class="navigation">
+        <button class="back-button" onclick="goToStep(3)">← 이전: 표현 연습</button>
+        <span></span>
+      </div>
+    </section>
+
+    <section class="card" id="finish">
+      <div class="celebration">
+        <div class="emoji">🎉</div>
+        <h2>잘했어요!</h2>
+        <p>더 좋은 공부 습관 영어 활동을 모두 완료했어요.</p>
+
+        <div class="score-box" id="finalScore"></div>
+
+        <div class="saved-writing" id="savedWriting"></div>
+
+        <button class="restart-button" onclick="restartActivity()">처음부터 다시 하기</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let currentStep = 1;
+    let score = 0;
+    let answeredQuestions = new Set();
+    let completedPractice = new Set();
+
+    const stepNames = {
+      1: "읽기",
+      2: "의미 확인",
+      3: "표현 연습",
+      4: "나의 문장 쓰기"
+    };
+
+    const modelSentences = [
+      "I keep track of my homework in a notebook.",
+      "I try to stay away from my phone when I study.",
+      "I also take a break after 30 minutes."
+    ];
+
+    function updateProgress() {
+      const stepText = document.getElementById("stepText");
+      const scoreText = document.getElementById("scoreText");
+      const progressFill = document.getElementById("progressFill");
+
+      if (currentStep <= 4) {
+        stepText.textContent = `${currentStep} / 4 단계: ${stepNames[currentStep]}`;
+        progressFill.style.width = `${currentStep * 25}%`;
+      } else {
+        stepText.textContent = "활동 완료";
+        progressFill.style.width = "100%";
+      }
+
+      scoreText.textContent = `점수: ${score} / ${answeredQuestions.size + completedPractice.size}`;
+    }
+
+    function goToStep(step) {
+      document.querySelectorAll(".card").forEach(card => card.classList.remove("active"));
+      document.getElementById(`step${step}`).classList.add("active");
+      currentStep = step;
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function answerQuestion(questionId, selectedButton, isCorrect) {
+      if (answeredQuestions.has(questionId)) return;
+
+      answeredQuestions.add(questionId);
+
+      const question = document.querySelector(`[data-question="${questionId}"]`);
+      const buttons = question.querySelectorAll(".option");
+      const feedback = document.getElementById(`feedback-${questionId}`);
+
+      buttons.forEach(button => {
+        button.disabled = true;
+      });
+
+      if (isCorrect) {
+        selectedButton.classList.add("correct");
+        feedback.textContent = "정답이에요! 잘했어요.";
+        feedback.className = "feedback good";
+        score++;
+      } else {
+        selectedButton.classList.add("wrong");
+        buttons.forEach(button => {
+          if (button.getAttribute("onclick").includes(", true)")) {
+            button.classList.add("correct");
+          }
+        });
+        feedback.textContent = "아쉬워요. 초록색으로 표시된 답이 정답이에요.";
+        feedback.className = "feedback bad";
+      }
+
+      if (answeredQuestions.size === 3) {
+        document.getElementById("step2Next").disabled = false;
+      }
+
+      updateProgress();
+    }
+
+    function checkPractice(number, correctAnswer) {
+      if (completedPractice.has(number)) return;
+
+      const select = document.getElementById(`practice${number}`);
+      const feedback = document.getElementById(`practice-feedback-${number}`);
+
+      if (!select.value) {
+        feedback.textContent = "먼저 영어 표현을 선택하세요.";
+        feedback.className = "feedback bad";
+        return;
+      }
+
+      completedPractice.add(number);
+      select.disabled = true;
+
+      if (select.value === correctAnswer) {
+        feedback.textContent = "정답이에요!";
+        feedback.className = "feedback good";
+        score++;
+      } else {
+        feedback.textContent = `정답은 “${correctAnswer}”예요.`;
+        feedback.className = "feedback bad";
+      }
+
+      if (completedPractice.size === 6) {
+        document.getElementById("step3Next").disabled = false;
+      }
+
+      updateProgress();
+    }
+
+    function normalizeText(text) {
+      return text
+        .toLowerCase()
+        .replace(/[.,!?]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function includesModelSentence(writing) {
+      const normalizedWriting = normalizeText(writing);
+
+      return modelSentences.some(sentence => {
+        return normalizedWriting.includes(normalizeText(sentence));
+      });
+    }
+
+    function finishActivity() {
+      const writing = document.getElementById("studentWriting").value.trim();
+      const feedback = document.getElementById("writing-feedback");
+
+      if (writing.length < 15) {
+        feedback.textContent = "영어 문장을 조금 더 작성한 뒤 완료해 주세요.";
+        feedback.className = "feedback bad";
+        return;
+      }
+
+      if (includesModelSentence(writing)) {
+        feedback.textContent = "예시 문장을 그대로 사용했어요. 나의 공부 습관에 맞는 새로운 문장으로 바꿔 보세요.";
+        feedback.className = "feedback bad";
+        return;
+      }
+
+      const expressions = [
+        "keep track of",
+        "take a break",
+        "stay away from",
+        "get enough sleep",
+        "deal with",
+        "stick to"
+      ];
+
+      const lowerWriting = writing.toLowerCase();
+      const usedExpressions = expressions.filter(expression => lowerWriting.includes(expression));
+
+      if (usedExpressions.length >= 2) {
+        feedback.textContent = "아주 좋아요! 목표 표현을 2개 이상 사용했어요.";
+      } else {
+        feedback.textContent = "글을 잘 썼어요! 다음에는 목표 표현을 2개 이상 사용해 보세요.";
+      }
+
+      feedback.className = "feedback good";
+
+      document.getElementById("finalScore").textContent = `연습 점수: ${score} / 9`;
+      document.getElementById("savedWriting").textContent = `내가 쓴 영어 문장:\n${writing}`;
+
+      setTimeout(() => {
+        document.querySelectorAll(".card").forEach(card => card.classList.remove("active"));
+        document.getElementById("finish").classList.add("active");
+        currentStep = 5;
+        updateProgress();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 500);
+    }
+
+    function shuffleOptions() {
+      document.querySelectorAll(".practice-select").forEach(select => {
+        const placeholder = select.options[0];
+        const expressionOptions = Array.from(select.options).slice(1);
+
+        for (let index = expressionOptions.length - 1; index > 0; index--) {
+          const randomIndex = Math.floor(Math.random() * (index + 1));
+          [expressionOptions[index], expressionOptions[randomIndex]] =
+            [expressionOptions[randomIndex], expressionOptions[index]];
+        }
+
+        select.innerHTML = "";
+        select.appendChild(placeholder);
+
+        expressionOptions.forEach(option => {
+          select.appendChild(option);
+        });
+      });
+    }
+
+    function restartActivity() {
+      score = 0;
+      answeredQuestions = new Set();
+      completedPractice = new Set();
+
+      document.querySelectorAll(".option").forEach(button => {
+        button.disabled = false;
+        button.classList.remove("correct", "wrong");
+      });
+
+      document.querySelectorAll("select").forEach(select => {
+        select.disabled = false;
+        select.value = "";
+      });
+
+      document.querySelectorAll(".feedback").forEach(feedback => {
+        feedback.textContent = "";
+        feedback.className = "feedback";
+      });
+
+      document.getElementById("studentWriting").value = "";
+      document.getElementById("step2Next").disabled = true;
+      document.getElementById("step3Next").disabled = true;
+
+      shuffleOptions();
+      goToStep(1);
+    }
+
+    shuffleOptions();
+    updateProgress();
+  </script>
+</body>
+</html>
+```
