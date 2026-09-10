@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building Better Study Habits</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f4f7fb;
+        color: #1f2937;
+        line-height: 1.6;
+    }
+
+    .app {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    header {
+        background: white;
+        border-radius: 18px;
+        padding: 24px;
+        margin-bottom: 18px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+        margin: 0 0 6px;
+        font-size: 30px;
+    }
+
+    .subtitle {
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .progress-area {
+        margin-top: 18px;
+    }
+
+    .progress-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        margin-bottom: 7px;
+        color: #4b5563;
+    }
+
+    .progress-bar {
+        height: 10px;
+        background: #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        width: 20%;
+        background: #4f46e5;
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+
+    .timer {
+        display: inline-block;
+        background: #eef2ff;
+        color: #3730a3;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: bold;
+        margin-top: 12px;
+    }
+
+    .screen {
+        display: none;
+        background: white;
+        border-radius: 18px;
+        padding: 28px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    .screen.active {
+        display: block;
+    }
+
+    .step-label {
+        display: inline-block;
+        font-size: 13px;
+        font-weight: bold;
+        color: #4f46e5;
+        background: #eef2ff;
+        padding: 5px 10px;
+        border-radius: 15px;
+        margin-bottom: 10px;
+    }
+
+    h2 {
+        margin-top: 5px;
+        margin-bottom: 12px;
+        font-size: 24px;
+    }
+
+    .instruction {
+        color: #4b5563;
+        margin-bottom: 20px;
+    }
+
+    .story {
+        background: #f8fafc;
+        border-left: 5px solid #4f46e5;
+        padding: 18px 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+    }
+
+    .story strong {
+        color: #3730a3;
+    }
+
+    .expression-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 18px;
+    }
+
+    .expression-card {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 15px;
+        cursor: pointer;
+        background: white;
+        transition: 0.2s;
+    }
+
+    .expression-card:hover {
+        border-color: #818cf8;
+        transform: translateY(-1px);
+    }
+
+    .expression-card.selected {
+        border-color: #4f46e5;
+        background: #eef2ff;
+    }
+
+    .expression {
+        font-weight: bold;
+        font-size: 17px;
+        color: #312e81;
+    }
+
+    .meaning {
+        display: none;
+        margin-top: 7px;
+        font-size: 14px;
+        color: #4b5563;
+    }
+
+    .expression-card.selected .meaning {
+        display: block;
+    }
+
+    .question {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 12px;
+        margin: 18px 0;
+    }
+
+    .question-number {
+        font-weight: bold;
+        color: #4f46e5;
+        margin-bottom: 8px;
+    }
+
+    .option {
+        display: block;
+        width: 100%;
+        text-align: left;
+        border: 2px solid #e5e7eb;
+        background: white;
+        padding: 12px 15px;
+        margin: 9px 0;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 15px;
+        transition: 0.2s;
+    }
+
+    .option:hover {
+        border-color: #818cf8;
+    }
+
+    .option.correct {
+        border-color: #16a34a;
+        background: #f0fdf4;
+    }
+
+    .option.wrong {
+        border-color: #dc2626;
+        background: #fef2f2;
+    }
+
+    .feedback {
+        display: none;
+        margin-top: 12px;
+        padding: 10px 13px;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .feedback.show {
+        display: block;
+    }
+
+    .feedback.correct {
+        background: #f0fdf4;
+        color: #166534;
+    }
+
+    .feedback.wrong {
+        background: #fef2f2;
+        color: #991b1b;
+    }
+
+    .fill-sentence {
+        font-size: 18px;
+        margin: 20px 0;
+        line-height: 2;
+    }
+
+    select {
+        padding: 8px 10px;
+        border: 2px solid #c7d2fe;
+        border-radius: 8px;
+        font-size: 16px;
+        background: white;
+    }
+
+    button.main-btn {
+        border: none;
+        background: #4f46e5;
+        color: white;
+        padding: 12px 22px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 18px;
+    }
+
+    button.main-btn:hover {
+        background: #4338ca;
+    }
+
+    button.secondary-btn {
+        border: 2px solid #d1d5db;
+        background: white;
+        color: #374151;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 15px;
+        cursor: pointer;
+        margin-top: 18px;
+        margin-right: 8px;
+    }
+
+    .score-box {
+        text-align: center;
+        padding: 25px;
+        background: #f8fafc;
+        border-radius: 15px;
+        margin: 20px 0;
+    }
+
+    .score-number {
+        font-size: 48px;
+        font-weight: bold;
+        color: #4f46e5;
+    }
+
+    .result-message {
+        font-size: 18px;
+        margin-top: 8px;
+    }
+
+    .review {
+        margin-top: 25px;
+    }
+
+    .review-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .review-item:last-child {
+        border-bottom: none;
+    }
+
+    .review-expression {
+        font-weight: bold;
+        color: #312e81;
+    }
+
+    .tip {
+        background: #fffbeb;
+        border-left: 4px solid #f59e0b;
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    @media (max-width: 650px) {
+        .app {
+            padding: 12px;
+        }
+
+        .screen, header {
+            padding: 20px;
+        }
+
+        .expression-grid {
+            grid-template-columns: 1fr;
+        }
+
+        h1 {
+            font-size: 25px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <header>
+        <h1>📚 Building Better Study Habits</h1>
+        <p class="subtitle">Learn six useful expressions for talking about study habits.</p>
+
+        <div class="progress-area">
+            <div class="progress-info">
+                <span id="stepText">Step 1 of 5</span>
+                <span id="scoreText">Score: 0</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="timer" id="timer">10:00</div>
+    </header>
+
+
+    <!-- STEP 1 -->
+    <section class="screen active" id="screen1">
+        <span class="step-label">STEP 1 · READ</span>
+        <h2>Meet Jisoo</h2>
+
+        <p class="instruction">
+            Read the short story. Then click the expressions to see their meanings.
+        </p>
+
+        <div class="story">
+            Jisoo wanted to improve her study habits before the exam period.
+            She began to <strong>keep track of</strong> how long she studied each day.
+            She also learned when to <strong>take a break</strong> instead of studying for too long.
+            While studying, she tried to <strong>stay away from</strong> her phone and made sure to
+            <strong>get enough sleep</strong>. When she felt stressed, she learned how to
+            <strong>deal with</strong> it by taking a short walk. After several weeks,
+            she found it easier to <strong>stick to</strong> her new routine.
+        </div>
+
+        <div class="expression-grid">
+
+            <div class="expression-card" onclick="this.classList.toggle('selected')">
+                <div class="expression">keep track of</div>
+                <div class="meaning">to watch or record something carefully<br>
+                    → 계속 확인하다 / 기록하다
+                </div>
+            </div>
+
+            <div class="expression-card" onclick="this.classList.toggle('selected')">
+                <div class="expression">take a break</div>
+                <div class="meaning">to stop working or studying for a short time<br>
+                    → 잠시 쉬다
+                </div>
+            </div>
+
+            <div class="expression-card" onclick="this.classList.toggle('selected')">
+                <div class="expression">stay away from</div>
+                <div class="meaning">to avoid going near or using something<br>
+                    → ~을 피하다 / 멀리하다
+                </div>
+            </div>
+
+            <div class="expression-card" onclick="this.classList.toggle('selected')">
+                <div class="expression">get enough sleep</div>
+                <div class="meaning">to sleep for the amount of time you need<br>
+                    → 충분히 자다
+                </div>
+            </div>
+
+            <div class="expression-card" onclick="this.classList.toggle('selected')">
+                <div class="expression">deal with</div>
+                <div class="meaning">to handle or manage a problem or situation<br>
+                    → ~을 처리하다 / 대처하다
+                </div>
+            </div>
+
+            <div class="expression-card" onclick="this.classList.toggle('selected')">
+                <div class="expression">stick to</div>
+                <div class="meaning">to continue following a plan or routine<br>
+                    → ~을 계속 지키다
+                </div>
+            </div>
+
+        </div>
+
+        <button class="main-btn" onclick="goToStep(2)">
+            I understand → Continue
+        </button>
+    </section>
+
+
+    <!-- STEP 2 -->
+    <section class="screen" id="screen2">
+        <span class="step-label">STEP 2 · CHECK MEANING</span>
+        <h2>Which expression fits?</h2>
+
+        <p class="instruction">
+            Choose the expression that best completes each situation.
+        </p>
+
+        <div class="question">
+            <div class="question-number">Question 1</div>
+            <div>Minho writes down how many minutes he studies every day. He wants to ______ his study time.</div>
+
+            <button class="option" onclick="answerMeaning(this, false, 'q1')">take a break</button>
+            <button class="option" onclick="answerMeaning(this, true, 'q1')">keep track of</button>
+            <button class="option" onclick="answerMeaning(this, false, 'q1')">stick to</button>
+
+            <div class="feedback" id="q1-feedback"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-number">Question 2</div>
+            <div>Yuna studies for 50 minutes and then rests for 10 minutes. She likes to ______.</div>
+
+            <button class="option" onclick="answerMeaning(this, true, 'q2')">take a break</button>
+            <button class="option" onclick="answerMeaning(this, false, 'q2')">deal with</button>
+            <button class="option" onclick="answerMeaning(this, false, 'q2')">stay away from</button>
+
+            <div class="feedback" id="q2-feedback"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-number">Question 3</div>
+            <div>Jun turns off his phone while studying because he wants to ______ it.</div>
+
+            <button class="option" onclick="answerMeaning(this, false, 'q3')">get enough sleep</button>
+            <button class="option" onclick="answerMeaning(this, false, 'q3')">deal with</button>
+            <button class="option" onclick="answerMeaning(this, true, 'q3')">stay away from</button>
+
+            <div class="feedback" id="q3-feedback"></div>
+        </div>
+
+        <button class="main-btn" onclick="goToStep(3)">
+            Next →
+        </button>
+    </section>
+
+
+    <!-- STEP 3 -->
+    <section class="screen" id="screen3">
+        <span class="step-label">STEP 3 · USE IN CONTEXT</span>
+        <h2>Choose the best expression</h2>
+
+        <p class="instruction">
+            Think about the meaning and the situation. Choose the most natural expression.
+        </p>
+
+        <div class="question">
+            <div class="question-number">Question 4</div>
+            <div>
+                I have a big English test tomorrow. I should ______ tonight instead of staying up all night.
+            </div>
+
+            <button class="option" onclick="answerMeaning(this, true, 'q4')">get enough sleep</button>
+            <button class="option" onclick="answerMeaning(this, false, 'q4')">keep track of</button>
+            <button class="option" onclick="answerMeaning(this, false, 'q4')">stick to</button>
+
+            <div class="feedback" id="q4-feedback"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-number">Question 5</div>
+            <div>
+                I feel stressed because I have too much homework. I need to learn how to ______ the problem.
+            </div>
+
+            <button class="option" onclick="answerMeaning(this, false, 'q5')">take a break</button>
+            <button class="option" onclick="answerMeaning(this, true, 'q5')">deal with</button>
+            <button class="option" onclick="answerMeaning(this, false, 'q5')">stay away from</button>
+
+            <div class="feedback" id="q5-feedback"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-number">Question 6</div>
+            <div>
+                Mina made a new study plan last week. She wants to continue following it. She wants to ______ her plan.
+            </div>
+
+            <button class="option" onclick="answerMeaning(this, false, 'q6')">get enough sleep</button>
+            <button class="option" onclick="answerMeaning(this, true, 'q6')">stick to</button>
+            <button class="option" onclick="answerMeaning(this, false, 'q6')">take a break</button>
+
+            <div class="feedback" id="q6-feedback"></div>
+        </div>
+
+        <button class="main-btn" onclick="goToStep(4)">
+            Next → 
+        </button>
+    </section>
+
+
+    <!-- STEP 4 -->
+    <section class="screen" id="screen4">
+        <span class="step-label">STEP 4 · BUILD A SENTENCE</span>
+        <h2>Complete the sentences</h2>
+
+        <p class="instruction">
+            Choose the expression that makes the sentence natural.
+        </p>
+
+        <div class="question">
+
+            <div class="fill-sentence">
+                1. I use a study timer to
+                <select id="fill1">
+                    <option value="">Choose...</option>
+                    <option value="keep">keep track of</option>
+                    <option value="break">take a break</option>
+                    <option value="sleep">get enough sleep</option>
+                </select>
+                my study time.
+            </div>
+
+            <div class="fill-sentence">
+                2. My phone is distracting me, so I try to
+                <select id="fill2">
+                    <option value="">Choose...</option>
+                    <option value="away">stay away from</option>
+                    <option value="deal">deal with</option>
+                    <option value="stick">stick to</option>
+                </select>
+                it while studying.
+            </div>
+
+            <div class="fill-sentence">
+                3. I made a weekly study schedule, and I want to
+                <select id="fill3">
+                    <option value="">Choose...</option>
+                    <option value="sleep">get enough sleep</option>
+                    <option value="stick">stick to</option>
+                    <option value="track">keep track of</option>
+                </select>
+                it.
+            </div>
+
+            <div class="fill-sentence">
+                4. When I have a difficult problem, I try to
+                <select id="fill4">
+                    <option value="">Choose...</option>
+                    <option value="deal">deal with</option>
+                    <option value="break">take a break</option>
+                    <option value="away">stay away from</option>
+                </select>
+                it calmly.
+            </div>
+
+            <button class="main-btn" onclick="checkFillIn()">
+                Check My Answers
+            </button>
+
+            <div class="feedback" id="fill-feedback"></div>
+        </div>
+
+        <button class="secondary-btn" onclick="goToStep(3)">
+            ← Back
+        </button>
+
+        <button class="main-btn" onclick="goToStep(5)">
+            Finish →
+        </button>
+    </section>
+
+
+    <!-- STEP 5 -->
+    <section class="screen" id="screen5">
+        <span class="step-label">STEP 5 · FINAL CHECK</span>
+        <h2>How well do you know the expressions?</h2>
+
+        <p class="instruction">
+            Choose the expression that best matches each meaning.
+        </p>
+
+        <div class="question">
+            <div class="question-number">1. “to continue following a plan”</div>
+
+            <button class="option" onclick="finalAnswer(this, false)">deal with</button>
+            <button class="option" onclick="finalAnswer(this, true)">stick to</button>
+            <button class="option" onclick="finalAnswer(this, false)">take a break</button>
+        </div>
+
+        <div class="question">
+            <div class="question-number">2. “to avoid something”</div>
+
+            <button class="option" onclick="finalAnswer(this, true)">stay away from</button>
+            <button class="option" onclick="finalAnswer(this, false)">keep track of</button>
+            <button class="option" onclick="finalAnswer(this, false)">get enough sleep</button>
+        </div>
+
+        <div class="question">
+            <div class="question-number">3. “to handle a problem”</div>
+
+            <button class="option" onclick="finalAnswer(this, false)">stick to</button>
+            <button class="option" onclick="finalAnswer(this, false)">take a break</button>
+            <button class="option" onclick="finalAnswer(this, true)">deal with</button>
+        </div>
+
+        <button class="main-btn" onclick="showResult()">
+            See My Result
+        </button>
+    </section>
+
+
+    <!-- RESULT -->
+    <section class="screen" id="result">
+        <span class="step-label">COMPLETE</span>
+        <h2>🎉 Great job!</h2>
+
+        <div class="score-box">
+            <div>Your score</div>
+            <div class="score-number" id="finalScore">0</div>
+            <div class="result-message" id="resultMessage"></div>
+        </div>
+
+        <div class="review">
+            <h3>Six expressions to remember</h3>
+
+            <div class="review-item">
+                <span class="review-expression">keep track of</span>
+                — 계속 확인하다 / 기록하다
+            </div>
+
+            <div class="review-item">
+                <span class="review-expression">take a break</span>
+                — 잠시 쉬다
+            </div>
+
+            <div class="review-item">
+                <span class="review-expression">stay away from</span>
+                — ~을 피하다 / 멀리하다
+            </div>
+
+            <div class="review-item">
+                <span class="review-expression">get enough sleep</span>
+                — 충분히 자다
+            </div>
+
+            <div class="review-item">
+                <span class="review-expression">deal with</span>
+                — ~을 처리하다 / 대처하다
+            </div>
+
+            <div class="review-item">
+                <span class="review-expression">stick to</span>
+                — ~을 계속 지키다
+            </div>
+        </div>
+
+        <div class="tip">
+            💡 <strong>Study Tip:</strong>
+            Good study habits are not about studying all the time.
+            Take breaks, get enough sleep, stay away from distractions,
+            and stick to a routine!
+        </div>
+
+        <button class="main-btn" onclick="location.reload()">
+            Try Again
+        </button>
+    </section>
+
+</div>
+
+
+<script>
+
+let currentStep = 1;
+let score = 0;
+let answered = {};
+let finalScore = 0;
+
+let timeLeft = 600;
+
+const timerElement = document.getElementById("timer");
+
+const timer = setInterval(function() {
+
+    if (timeLeft <= 0) {
+        clearInterval(timer);
+        timerElement.textContent = "Time's up!";
+        return;
+    }
+
+    timeLeft--;
+
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+
+    timerElement.textContent =
+        String(minutes).padStart(2, "0") + ":" +
+        String(seconds).padStart(2, "0");
+
+}, 1000);
+
+
+function goToStep(step) {
+
+    document.querySelectorAll(".screen").forEach(function(screen) {
+        screen.classList.remove("active");
+    });
+
+    const target = document.getElementById("screen" + step);
+
+    if (target) {
+        target.classList.add("active");
+    }
+
+    currentStep = step;
+
+    const progress = (step / 5) * 100;
+
+    document.getElementById("progressFill").style.width =
+        Math.min(progress, 100) + "%";
+
+    document.getElementById("stepText").textContent =
+        "Step " + step + " of 5";
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+function answerMeaning(button, correct, questionId) {
+
+    if (answered[questionId]) {
+        return;
+    }
+
+    answered[questionId] = true;
+
+    const feedback =
+        document.getElementById(questionId + "-feedback");
+
+    const buttons =
+        button.parentElement.querySelectorAll(".option");
+
+    buttons.forEach(function(btn) {
+        btn.disabled = true;
+    });
+
+    if (correct) {
+
+        button.classList.add("correct");
+
+        feedback.textContent =
+            "✓ Correct! Good job.";
+
+        feedback.className =
+            "feedback show correct";
+
+        score++;
+
+        document.getElementById("scoreText").textContent =
+            "Score: " + score;
+
+    } else {
+
+        button.classList.add("wrong");
+
+        feedback.textContent =
+            "✗ Not quite. Think about the meaning and the situation again.";
+
+        feedback.className =
+            "feedback show wrong";
+    }
+}
+
+
+function checkFillIn() {
+
+    const answers = {
+        fill1: "keep",
+        fill2: "away",
+        fill3: "stick",
+        fill4: "deal"
+    };
+
+    let correctCount = 0;
+
+    Object.keys(answers).forEach(function(id) {
+
+        const select = document.getElementById(id);
+
+        if (select.value === answers[id]) {
+            correctCount++;
+            select.style.borderColor = "#16a34a";
+        } else {
+            select.style.borderColor = "#dc2626";
+        }
+    });
+
+    const feedback =
+        document.getElementById("fill-feedback");
+
+    if (correctCount === 4) {
+
+        feedback.textContent =
+            "✓ Excellent! All four sentences are correct.";
+
+        feedback.className =
+            "feedback show correct";
+
+        score += 4;
+
+    } else {
+
+        feedback.textContent =
+            "You got " + correctCount +
+            " out of 4 correct. Check the expressions again.";
+
+        feedback.className =
+            "feedback show wrong";
+    }
+
+    document.getElementById("scoreText").textContent =
+        "Score: " + score;
+}
+
+
+function finalAnswer(button, correct) {
+
+    if (button.dataset.answered === "true") {
+        return;
+    }
+
+    const parent = button.parentElement;
+
+    parent.querySelectorAll(".option").forEach(function(btn) {
+        btn.dataset.answered = "true";
+        btn.disabled = true;
+    });
+
+    if (correct) {
+
+        button.classList.add("correct");
+
+        finalScore++;
+
+    } else {
+
+        button.classList.add("wrong");
+    }
+}
+
+
+function showResult() {
+
+    document.querySelectorAll(".screen").forEach(function(screen) {
+        screen.classList.remove("active");
+    });
+
+    document.getElementById("result").classList.add("active");
+
+    document.getElementById("progressFill").style.width = "100%";
+
+    document.getElementById("stepText").textContent =
+        "Complete";
+
+    /*
+       Maximum score:
+       Step 2: 3
+       Step 3: 3
+       Step 4: 4
+       Step 5: 3
+       Total: 13
+    */
+
+    const totalScore = score + finalScore;
+
+    document.getElementById("finalScore").textContent =
+        totalScore + " / 13";
+
+    let message;
+
+    if (totalScore >= 11) {
+        message =
+            "Excellent! You can understand and use the expressions very well.";
+    } else if (totalScore >= 8) {
+        message =
+            "Good job! You understand most of the expressions. Review the ones you missed.";
+    } else {
+        message =
+            "Keep practicing! Go back to the six expressions and try the activity again.";
+    }
+
+    document.getElementById("resultMessage").textContent =
+        message;
+
+    clearInterval(timer);
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+</script>
+
+</body>
+</html>
