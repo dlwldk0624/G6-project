@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오늘 뭐 입지?</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #f8f6f2;
+      --card: #ffffff;
+      --text: #222222;
+      --sub: #767676;
+      --line: #e7e3dc;
+      --accent: #222222;
+      --soft: #eeeae4;
+      --selected: #222222;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 10% 10%, #fff 0%, transparent 35%),
+        radial-gradient(circle at 90% 90%, #ece8e1 0%, transparent 40%),
+        var(--bg);
+      font-family:
+        -apple-system, BlinkMacSystemFont,
+        "Pretendard", "Apple SD Gothic Neo",
+        "Noto Sans KR", sans-serif;
+      color: var(--text);
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .screen {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* -------------------------
+       첫 번째 화면
+    -------------------------- */
+
+    #styleScreen {
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .intro-wrapper {
+      width: 100%;
+      max-width: 950px;
+      text-align: center;
+    }
+
+    .mini-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--line);
+      font-size: 13px;
+      font-weight: 700;
+      color: #555;
+      margin-bottom: 24px;
+    }
+
+    .intro-title {
+      font-size: clamp(36px, 6vw, 70px);
+      line-height: 1.06;
+      letter-spacing: -0.06em;
+      margin-bottom: 18px;
+    }
+
+    .intro-title span {
+      color: #9c9285;
+    }
+
+    .intro-desc {
+      color: var(--sub);
+      font-size: 16px;
+      line-height: 1.7;
+      margin-bottom: 42px;
+    }
+
+    .style-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .style-card {
+      background: rgba(255,255,255,0.82);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 26px 12px 22px;
+      cursor: pointer;
+      transition: 0.25s ease;
+      min-height: 170px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .style-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.07);
+    }
+
+    .style-card.selected {
+      color: white;
+      background: var(--selected);
+      border-color: var(--selected);
+      transform: translateY(-4px);
+    }
+
+    .style-emoji {
+      font-size: 36px;
+      margin-bottom: 17px;
+    }
+
+    .style-name {
+      font-weight: 800;
+      font-size: 17px;
+      margin-bottom: 8px;
+    }
+
+    .style-description {
+      color: var(--sub);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .style-card.selected .style-description {
+      color: rgba(255,255,255,0.65);
+    }
+
+    .start-button {
+      border: 0;
+      border-radius: 18px;
+      padding: 18px 38px;
+      background: #222;
+      color: white;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .start-button.enabled {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .start-button.enabled:hover {
+      transform: translateY(-2px);
+      background: #000;
+    }
+
+    /* -------------------------
+       룰렛 화면
+    -------------------------- */
+
+    #rouletteScreen {
+      flex-direction: column;
+      padding: 28px;
+    }
+
+    .topbar {
+      width: 100%;
+      max-width: 1180px;
+      margin: 0 auto 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      font-size: 23px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .brand span {
+      color: #aaa197;
+    }
+
+    .style-chip-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .current-style {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .change-style {
+      border: none;
+      background: transparent;
+      color: #777;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .main-panel {
+      width: 100%;
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .hero h2 {
+      font-size: clamp(30px, 4vw, 48px);
+      letter-spacing: -0.05em;
+      margin-bottom: 8px;
+    }
+
+    .hero p {
+      color: var(--sub);
+      font-size: 14px;
+    }
+
+    .date-box {
+      text-align: right;
+      font-size: 13px;
+      color: #8d877f;
+    }
+
+    .roulette-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+    }
+
+    .roulette-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 25px;
+      overflow: hidden;
+      min-height: 285px;
+      display: flex;
+      flex-direction: column;
+      transition: 0.25s ease;
+      position: relative;
+    }
+
+    .roulette-card.spinning {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 35px rgba(0,0,0,0.08);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 18px 0;
+    }
+
+    .category {
+      font-size: 13px;
+      font-weight: 800;
+      color: #777;
+    }
+
+    .category-icon {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      background: #f4f1ec;
+      border-radius: 50%;
+      font-size: 17px;
+    }
+
+    .roulette-window {
+      flex: 1;
+      min-height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 14px;
+      overflow: hidden;
+    }
+
+    .item-display {
+      text-align: center;
+      transition: 0.12s ease;
+    }
+
+    .roulette-card.spinning .item-display {
+      filter: blur(1px);
+      transform: scale(0.96);
+    }
+
+    .item-emoji {
+      font-size: 51px;
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    .item-name {
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1.4;
+      letter-spacing: -0.03em;
+    }
+
+    .item-sub {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 7px;
+    }
+
+    .reroll-button {
+      margin: 0 13px 13px;
+      border: none;
+      background: #f4f2ee;
+      border-radius: 13px;
+      padding: 11px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s;
+      color: #555;
+    }
+
+    .reroll-button:hover {
+      background: #e8e4de;
+    }
+
+    .reroll-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .main-roll-button {
+      border: none;
+      border-radius: 18px;
+      padding: 17px 30px;
+      background: #222;
+      color: white;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+      transition: 0.2s;
+    }
+
+    .main-roll-button:hover {
+      background: #000;
+      transform: translateY(-2px);
+    }
+
+    .main-roll-button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .save-button {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px 24px;
+      background: white;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* -------------------------
+       결과 메시지
+    -------------------------- */
+
+    .result-message {
+      margin: 25px auto 0;
+      max-width: 720px;
+      background: rgba(255,255,255,0.8);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 17px 20px;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: 0.3s;
+    }
+
+    .result-message.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* -------------------------
+       Toast
+    -------------------------- */
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translate(-50%, 20px);
+      background: #222;
+      color: white;
+      border-radius: 999px;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.3s;
+      z-index: 100;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    /* -------------------------
+       모바일
+    -------------------------- */
+
+    @media (max-width: 950px) {
+      .style-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .style-card:last-child {
+        grid-column: span 2;
+      }
+
+      .roulette-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .roulette-card:last-child {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 600px) {
+      #styleScreen {
+        align-items: flex-start;
+        padding-top: 55px;
+      }
+
+      .intro-title {
+        font-size: 42px;
+      }
+
+      .intro-desc br {
+        display: none;
+      }
+
+      .style-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .style-card,
+      .style-card:last-child {
+        grid-column: span 1;
+        min-height: 120px;
+        flex-direction: row;
+        justify-content: flex-start;
+        text-align: left;
+        padding: 20px;
+      }
+
+      .style-emoji {
+        margin: 0 18px 0 2px;
+      }
+
+      .style-description {
+        margin-top: 2px;
+      }
+
+      #rouletteScreen {
+        padding: 20px 15px 40px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .brand {
+        font-size: 20px;
+      }
+
+      .style-chip-area {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 5px;
+      }
+
+      .hero {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .date-box {
+        text-align: left;
+      }
+
+      .roulette-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .roulette-card,
+      .roulette-card:last-child {
+        grid-column: span 1;
+        min-height: 235px;
+      }
+
+      .roulette-window {
+        min-height: 125px;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .main-roll-button,
+      .save-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- 첫 번째 화면 -->
+  <section id="styleScreen" class="screen active">
+    <div class="intro-wrapper">
+
+      <div class="mini-label">
+        ✦ DAILY OUTFIT PICKER
+      </div>
+
+      <h1 class="intro-title">
+        오늘도 옷장 앞에서<br>
+        <span>고민 중인가요?</span>
+      </h1>
+
+      <p class="intro-desc">
+        당신이 원하는 스타일 하나만 골라주세요.<br>
+        오늘 입을 옷은 제가 대신 정해드릴게요.
+      </p>
+
+      <div class="style-grid">
+
+        <div class="style-card" data-style="minimal">
+          <div class="style-emoji">◻️</div>
+          <div>
+            <div class="style-name">미니멀</div>
+            <div class="style-description">
+              깔끔하고 차분한<br>
+              기본템 중심 스타일
+            </div>
+          </div>
+        </div>
+
+        <div class="style-card" data-style="casual">
+          <div class="style-emoji">🧢</div>
+          <div>
+            <div class="style-name">캐주얼</div>
+            <div class="style-description">
+              편안하면서도<br>
+              자연스러운 데일리룩
+            </div>
+          </div>
+        </div>
+
+        <div class="style-card" data-style="lovely">
+          <div class="style-emoji">🎀</div>
+          <div>
+            <div class="style-name">러블리</div>
+            <div class="style-description">
+              사랑스럽고 부드러운<br>
+              포인트가 있는 스타일
+            </div>
+          </div>
+        </div>
+
+        <div class="style-card" data-style="street">
+          <div class="style-emoji">🕶️</div>
+          <div>
+            <div class="style-name">스트릿</div>
+            <div class="style-description">
+              힙하고 개성 있는<br>
+              트렌디한 스타일
+            </div>
+          </div>
+        </div>
+
+        <div class="style-card" data-style="classic">
+          <div class="style-emoji">👜</div>
+          <div>
+            <div class="style-name">클래식</div>
+            <div class="style-description">
+              단정하고 세련된<br>
+              분위기의 스타일
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <button id="startButton" class="start-button">
+        이 스타일로 추천받기 →
+      </button>
+    </div>
+  </section>
+
+
+  <!-- 두 번째 화면 -->
+  <section id="rouletteScreen" class="screen">
+
+    <header class="topbar">
+      <div class="brand">
+        오늘 <span>뭐 입지?</span>
+      </div>
+
+      <div class="style-chip-area">
+        <div id="currentStyle" class="current-style">
+          🎀 러블리
+        </div>
+
+        <button id="changeStyleButton" class="change-style">
+          스타일 변경
+        </button>
+      </div>
+    </header>
+
+    <main class="main-panel">
+
+      <div class="hero">
+        <div>
+          <h2>오늘의 코디 🎲</h2>
+          <p>
+            룰렛을 돌려 오늘 하루의 패션을 정해보세요.
+          </p>
+        </div>
+
+        <div id="todayDate" class="date-box"></div>
+      </div>
+
+
+      <div class="roulette-grid">
+
+        <!-- 상의 -->
+        <article class="roulette-card" data-category="tops">
+
+          <div class="card-header">
+            <div class="category">TOP</div>
+            <div class="category-icon">👕</div>
+          </div>
+
+          <div class="roulette-window">
+            <div class="item-display">
+              <span class="item-emoji">❔</span>
+              <div class="item-name">상의</div>
+              <div class="item-sub">룰렛을 돌려보세요</div>
+            </div>
+          </div>
+
+          <button class="reroll-button">
+            ↻ 이것만 다시 돌리기
+          </button>
+
+        </article>
+
+
+        <!-- 하의 -->
+        <article class="roulette-card" data-category="bottoms">
+
+          <div class="card-header">
+            <div class="category">BOTTOM</div>
+            <div class="category-icon">👖</div>
+          </div>
+
+          <div class="roulette-window">
+            <div class="item-display">
+              <span class="item-emoji">❔</span>
+              <div class="item-name">하의</div>
+              <div class="item-sub">룰렛을 돌려보세요</div>
+            </div>
+          </div>
+
+          <button class="reroll-button">
+            ↻ 이것만 다시 돌리기
+          </button>
+
+        </article>
+
+
+        <!-- 신발 -->
+        <article class="roulette-card" data-category="shoes">
+
+          <div class="card-header">
+            <div class="category">SHOES</div>
+            <div class="category-icon">👟</div>
+          </div>
+
+          <div class="roulette-window">
+            <div class="item-display">
+              <span class="item-emoji">❔</span>
+              <div class="item-name">신발</div>
+              <div class="item-sub">룰렛을 돌려보세요</div>
+            </div>
+          </div>
+
+          <button class="reroll-button">
+            ↻ 이것만 다시 돌리기
+          </button>
+
+        </article>
+
+
+        <!-- 가방 -->
+        <article class="roulette-card" data-category="bags">
+
+          <div class="card-header">
+            <div class="category">BAG</div>
+            <div class="category-icon">👜</div>
+          </div>
+
+          <div class="roulette-window">
+            <div class="item-display">
+              <span class="item-emoji">❔</span>
+              <div class="item-name">가방</div>
+              <div class="item-sub">룰렛을 돌려보세요</div>
+            </div>
+          </div>
+
+          <button class="reroll-button">
+            ↻ 이것만 다시 돌리기
+          </button>
+
+        </article>
+
+
+        <!-- 악세사리 -->
+        <article class="roulette-card" data-category="accessories">
+
+          <div class="card-header">
+            <div class="category">ACCESSORY</div>
+            <div class="category-icon">💍</div>
+          </div>
+
+          <div class="roulette-window">
+            <div class="item-display">
+              <span class="item-emoji">❔</span>
+              <div class="item-name">악세사리</div>
+              <div class="item-sub">룰렛을 돌려보세요</div>
+            </div>
+          </div>
+
+          <button class="reroll-button">
+            ↻ 이것만 다시 돌리기
+          </button>
+
+        </article>
+
+      </div>
+
+
+      <div class="actions">
+        <button id="rollAllButton" class="main-roll-button">
+          🎲 오늘의 코디 룰렛 돌리기
+        </button>
+
+        <button id="saveButton" class="save-button">
+          ♡ 오늘 코디 저장
+        </button>
+      </div>
+
+
+      <div id="resultMessage" class="result-message">
+        룰렛을 돌리면 오늘의 코디 조합을 추천해드려요.
+      </div>
+
+    </main>
+
+  </section>
+
+
+  <div id="toast" class="toast">
+    오늘의 코디를 저장했어요 ♡
+  </div>
+
+
+  <script>
+
+    /* ==================================================
+       스타일별 패션 데이터
+    ================================================== */
+
+    const fashionData = {
+
+      minimal: {
+
+        label: "미니멀",
+        emoji: "◻️",
+
+        tops: [
+          ["🤍", "화이트 셔츠"],
+          ["🩶", "그레이 니트"],
+          ["🖤", "블랙 긴팔 티셔츠"],
+          ["🤍", "아이보리 가디건"],
+          ["🩵", "라이트 블루 셔츠"],
+          ["🤎", "베이지 니트"]
+        ],
+
+        bottoms: [
+          ["👖", "스트레이트 데님"],
+          ["🖤", "블랙 슬랙스"],
+          ["🤍", "아이보리 팬츠"],
+          ["🤎", "베이지 와이드 팬츠"],
+          ["🩶", "그레이 슬랙스"]
+        ],
+
+        shoes: [
+          ["👟", "화이트 스니커즈"],
+          ["🥿", "블랙 로퍼"],
+          ["👞", "브라운 로퍼"],
+          ["👟", "심플 러닝화"],
+          ["🥾", "블랙 앵클부츠"]
+        ],
+
+        bags: [
+          ["👜", "블랙 숄더백"],
+          ["🎒", "심플 백팩"],
+          ["🤎", "브라운 토트백"],
+          ["👜", "아이보리 숄더백"],
+          ["💼", "블랙 토트백"]
+        ],
+
+        accessories: [
+          ["⌚", "실버 시계"],
+          ["💍", "실버 링"],
+          ["🕶️", "블랙 선글라스"],
+          ["🧣", "무지 스카프"],
+          ["✨", "심플 귀걸이"]
+        ]
+      },
+
+
+      casual: {
+
+        label: "캐주얼",
+        emoji: "🧢",
+
+        tops: [
+          ["👕", "오버핏 반팔 티셔츠"],
+          ["🧥", "후드집업"],
+          ["👚", "스트라이프 티셔츠"],
+          ["🩵", "데님 셔츠"],
+          ["🧶", "맨투맨"],
+          ["🤍", "화이트 기본 티셔츠"]
+        ],
+
+        bottoms: [
+          ["👖", "와이드 데님"],
+          ["👖", "연청 데님"],
+          ["🩶", "그레이 조거팬츠"],
+          ["🩳", "버뮤다 팬츠"],
+          ["🤎", "카고 팬츠"]
+        ],
+
+        shoes: [
+          ["👟", "캔버스 스니커즈"],
+          ["👟", "화이트 운동화"],
+          ["👟", "레트로 스니커즈"],
+          ["🥿", "메리제인 슈즈"],
+          ["🥾", "캐주얼 워커"]
+        ],
+
+        bags: [
+          ["👜", "캔버스 에코백"],
+          ["🎒", "나일론 백팩"],
+          ["👜", "크로스백"],
+          ["💼", "메신저백"],
+          ["👜", "미니 숄더백"]
+        ],
+
+        accessories: [
+          ["🧢", "볼캡"],
+          ["⌚", "스포츠 워치"],
+          ["🎧", "헤드폰"],
+          ["🧦", "컬러 양말"],
+          ["✨", "실버 목걸이"]
+        ]
+      },
+
+
+      lovely: {
+
+        label: "러블리",
+        emoji: "🎀",
+
+        tops: [
+          ["🎀", "리본 블라우스"],
+          ["🤍", "레이스 블라우스"],
+          ["🌷", "파스텔 가디건"],
+          ["🩷", "핑크 니트"],
+          ["🧶", "크롭 가디건"],
+          ["🤍", "퍼프소매 블라우스"]
+        ],
+
+        bottoms: [
+          ["👗", "플리츠 스커트"],
+          ["🎀", "A라인 미니스커트"],
+          ["🤍", "아이보리 롱스커트"],
+          ["👖", "연청 와이드 데님"],
+          ["🌷", "플라워 롱스커트"]
+        ],
+
+        shoes: [
+          ["🥿", "메리제인 슈즈"],
+          ["🥿", "발레 플랫"],
+          ["👟", "화이트 스니커즈"],
+          ["👠", "키튼힐"],
+          ["🥾", "아이보리 앵클부츠"]
+        ],
+
+        bags: [
+          ["👜", "미니 숄더백"],
+          ["🎀", "리본 포인트백"],
+          ["🤍", "아이보리 토트백"],
+          ["👜", "체인 크로스백"],
+          ["🌷", "파스텔 미니백"]
+        ],
+
+        accessories: [
+          ["🎀", "리본 헤어핀"],
+          ["✨", "진주 귀걸이"],
+          ["💍", "얇은 실버 링"],
+          ["🌷", "플라워 헤어핀"],
+          ["🤍", "진주 목걸이"]
+        ]
+      },
+
+
+      street: {
+
+        label: "스트릿",
+        emoji: "🕶️",
+
+        tops: [
+          ["🖤", "오버핏 그래픽 티"],
+          ["🧥", "집업 후드"],
+          ["🩶", "빈티지 맨투맨"],
+          ["🏁", "레이싱 자켓"],
+          ["🧥", "오버핏 바람막이"],
+          ["🖤", "블랙 크롭 티"]
+        ],
+
+        bottoms: [
+          ["👖", "와이드 카고팬츠"],
+          ["👖", "워싱 데님"],
+          ["🖤", "블랙 와이드 팬츠"],
+          ["🩶", "조거팬츠"],
+          ["🩳", "오버사이즈 버뮤다"]
+        ],
+
+        shoes: [
+          ["👟", "볼드 스니커즈"],
+          ["👟", "레트로 러닝화"],
+          ["🥾", "블랙 워커"],
+          ["👟", "하이탑 스니커즈"],
+          ["🛹", "스케이트 슈즈"]
+        ],
+
+        bags: [
+          ["🎒", "블랙 백팩"],
+          ["👜", "나일론 크로스백"],
+          ["💼", "메신저백"],
+          ["🖤", "슬링백"],
+          ["👜", "빅 숄더백"]
+        ],
+
+        accessories: [
+          ["🧢", "볼캡"],
+          ["🎧", "헤드폰"],
+          ["🕶️", "틴트 선글라스"],
+          ["⛓️", "체인 목걸이"],
+          ["🧢", "비니"]
+        ]
+      },
+
+
+      classic: {
+
+        label: "클래식",
+        emoji: "👜",
+
+        tops: [
+          ["🤍", "옥스퍼드 셔츠"],
+          ["🧥", "트위드 자켓"],
+          ["🤎", "카라 니트"],
+          ["🖤", "블랙 터틀넥"],
+          ["🩶", "울 가디건"],
+          ["🤍", "실크 블라우스"]
+        ],
+
+        bottoms: [
+          ["🖤", "테일러드 슬랙스"],
+          ["🤎", "브라운 슬랙스"],
+          ["👗", "H라인 스커트"],
+          ["👖", "진청 스트레이트 데님"],
+          ["🩶", "핀턱 와이드 팬츠"]
+        ],
+
+        shoes: [
+          ["👞", "클래식 로퍼"],
+          ["🥿", "슬링백 플랫"],
+          ["🥾", "첼시 부츠"],
+          ["👠", "미들힐"],
+          ["🤎", "브라운 로퍼"]
+        ],
+
+        bags: [
+          ["👜", "레더 토트백"],
+          ["💼", "사첼백"],
+          ["🤎", "브라운 숄더백"],
+          ["👜", "블랙 미니백"],
+          ["💼", "구조적인 핸드백"]
+        ],
+
+        accessories: [
+          ["⌚", "가죽 시계"],
+          ["✨", "진주 귀걸이"],
+          ["🧣", "실크 스카프"],
+          ["💍", "골드 링"],
+          ["🤎", "레더 벨트"]
+        ]
+      }
+
+    };
+
+
+    /* ==================================================
+       기본 변수
+    ================================================== */
+
+    let selectedStyle = null;
+    let isRolling = false;
+
+    const selectedItems = {
+      tops: null,
+      bottoms: null,
+      shoes: null,
+      bags: null,
+      accessories: null
+    };
+
+    const categoryLabels = {
+      tops: "상의",
+      bottoms: "하의",
+      shoes: "신발",
+      bags: "가방",
+      accessories: "악세사리"
+    };
+
+
+    /* ==================================================
+       DOM
+    ================================================== */
+
+    const styleCards = document.querySelectorAll(".style-card");
+    const startButton = document.getElementById("startButton");
+
+    const styleScreen = document.getElementById("styleScreen");
+    const rouletteScreen = document.getElementById("rouletteScreen");
+
+    const currentStyle = document.getElementById("currentStyle");
+    const changeStyleButton = document.getElementById("changeStyleButton");
+
+    const rollAllButton = document.getElementById("rollAllButton");
+    const saveButton = document.getElementById("saveButton");
+
+    const resultMessage = document.getElementById("resultMessage");
+    const toast = document.getElementById("toast");
+
+
+    /* ==================================================
+       날짜 표시
+    ================================================== */
+
+    const today = new Date();
+
+    document.getElementById("todayDate").innerHTML =
+      today.toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long"
+      });
+
+
+    /* ==================================================
+       스타일 선택
+    ================================================== */
+
+    styleCards.forEach(card => {
+
+      card.addEventListener("click", () => {
+
+        styleCards.forEach(c => c.classList.remove("selected"));
+
+        card.classList.add("selected");
+
+        selectedStyle = card.dataset.style;
+
+        startButton.classList.add("enabled");
+
+      });
+
+    });
+
+
+    /* ==================================================
+       추천 화면 이동
+    ================================================== */
+
+    startButton.addEventListener("click", () => {
+
+      if (!selectedStyle) return;
+
+      const styleInfo = fashionData[selectedStyle];
+
+      currentStyle.textContent =
+        `${styleInfo.emoji} ${styleInfo.label}`;
+
+      styleScreen.classList.remove("active");
+      rouletteScreen.classList.add("active");
+
+      resetCards();
+
+      setTimeout(() => {
+        rollAll();
+      }, 400);
+
+    });
+
+
+    /* ==================================================
+       스타일 변경
+    ================================================== */
+
+    changeStyleButton.addEventListener("click", () => {
+
+      if (isRolling) return;
+
+      rouletteScreen.classList.remove("active");
+      styleScreen.classList.add("active");
+
+    });
+
+
+    /* ==================================================
+       랜덤 아이템
+    ================================================== */
+
+    function randomItem(category) {
+
+      const items = fashionData[selectedStyle][category];
+
+      return items[
+        Math.floor(Math.random() * items.length)
+      ];
+
+    }
+
+
+    /* ==================================================
+       카드 내용 변경
+    ================================================== */
+
+    function updateCard(card, item, final = false) {
+
+      const emoji = card.querySelector(".item-emoji");
+      const name = card.querySelector(".item-name");
+      const sub = card.querySelector(".item-sub");
+
+      emoji.textContent = item[0];
+      name.textContent = item[1];
+
+      if (final) {
+        sub.textContent = "오늘의 선택";
+      } else {
+        sub.textContent = "고르는 중...";
+      }
+
+    }
+
+
+    /* ==================================================
+       단일 룰렛
+    ================================================== */
+
+    function rollCategory(category, duration = 1250) {
+
+      return new Promise(resolve => {
+
+        const card = document.querySelector(
+          `.roulette-card[data-category="${category}"]`
+        );
+
+        card.classList.add("spinning");
+
+        const interval = setInterval(() => {
+
+          const tempItem = randomItem(category);
+
+          updateCard(card, tempItem, false);
+
+        }, 70);
+
+
+        setTimeout(() => {
+
+          clearInterval(interval);
+
+          let finalItem = randomItem(category);
+
+          selectedItems[category] = finalItem;
+
+          updateCard(card, finalItem, true);
+
+          card.classList.remove("spinning");
+
+          resolve();
+
+        }, duration);
+
+      });
+
+    }
+
+
+    /* ==================================================
+       전체 룰렛
+    ================================================== */
+
+    async function rollAll() {
+
+      if (isRolling || !selectedStyle) return;
+
+      isRolling = true;
+
+      rollAllButton.disabled = true;
+
+      document.querySelectorAll(".reroll-button").forEach(button => {
+        button.disabled = true;
+      });
+
+      resultMessage.classList.remove("show");
+
+
+      const categories = [
+        "tops",
+        "bottoms",
+        "shoes",
+        "bags",
+        "accessories"
+      ];
+
+
+      const promises = categories.map((category, index) => {
+
+        return rollCategory(
+          category,
+          1000 + index * 170
+        );
+
+      });
+
+
+      await Promise.all(promises);
+
+
+      isRolling = false;
+
+      rollAllButton.disabled = false;
+
+      document.querySelectorAll(".reroll-button").forEach(button => {
+        button.disabled = false;
+      });
+
+
+      showResultSummary();
+
+    }
+
+
+    rollAllButton.addEventListener("click", rollAll);
+
+
+    /* ==================================================
+       개별 다시 돌리기
+    ================================================== */
+
+    document.querySelectorAll(".reroll-button").forEach(button => {
+
+      button.addEventListener("click", async () => {
+
+        if (isRolling) return;
+
+        const card = button.closest(".roulette-card");
+
+        const category = card.dataset.category;
+
+        button.disabled = true;
+
+        await rollCategory(category, 900);
+
+        button.disabled = false;
+
+        showResultSummary();
+
+      });
+
+    });
+
+
+    /* ==================================================
+       결과 문장
+    ================================================== */
+
+    function showResultSummary() {
+
+      const styleName =
+        fashionData[selectedStyle].label;
+
+      const top = selectedItems.tops?.[1] || "";
+      const bottom = selectedItems.bottoms?.[1] || "";
+      const shoes = selectedItems.shoes?.[1] || "";
+      const bag = selectedItems.bags?.[1] || "";
+      const accessory = selectedItems.accessories?.[1] || "";
+
+      resultMessage.innerHTML =
+        `<strong>${styleName} 무드의 오늘 코디 완성 ✨</strong><br>
+        ${top} + ${bottom} + ${shoes} + ${bag} + ${accessory}`;
+
+      resultMessage.classList.add("show");
+
+    }
+
+
+    /* ==================================================
+       카드 초기화
+    ================================================== */
+
+    function resetCards() {
+
+      document.querySelectorAll(".roulette-card")
+        .forEach(card => {
+
+          const category = card.dataset.category;
+
+          card.querySelector(".item-emoji").textContent = "❔";
+
+          card.querySelector(".item-name").textContent =
+            categoryLabels[category];
+
+          card.querySelector(".item-sub").textContent =
+            "룰렛을 돌려보세요";
+
+        });
+
+      Object.keys(selectedItems).forEach(key => {
+        selectedItems[key] = null;
+      });
+
+      resultMessage.classList.remove("show");
+
+    }
+
+
+    /* ==================================================
+       오늘 코디 저장
+    ================================================== */
+
+    saveButton.addEventListener("click", () => {
+
+      if (!selectedItems.tops) {
+
+        showToast("먼저 룰렛을 돌려주세요 🎲");
+        return;
+
+      }
+
+      const savedOutfit = {
+
+        date: new Date().toISOString(),
+
+        style: selectedStyle,
+
+        outfit: {
+          ...selectedItems
+        }
+
+      };
+
+
+      localStorage.setItem(
+        "dailyFashionOutfit",
+        JSON.stringify(savedOutfit)
+      );
+
+
+      showToast("오늘의 코디를 저장했어요 ♡");
+
+      saveButton.textContent = "♥ 저장 완료";
+
+      setTimeout(() => {
+
+        saveButton.textContent = "♡ 오늘 코디 저장";
+
+      }, 1800);
+
+    });
+
+
+    /* ==================================================
+       Toast
+    ================================================== */
+
+    function showToast(message) {
+
+      toast.textContent = message;
+
+      toast.classList.add("show");
+
+      setTimeout(() => {
+
+        toast.classList.remove("show");
+
+      }, 1800);
+
+    }
+
+  </script>
+
+</body>
+</html>
