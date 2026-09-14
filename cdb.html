@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Football Game</title>
+<style>
+    * {
+        box-sizing: border-box;
+        user-select: none;
+    }
+
+    body {
+        margin: 0;
+        background: #111827;
+        color: white;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    h1 {
+        margin: 5px 0 10px;
+        font-size: 28px;
+    }
+
+    #info {
+        width: min(900px, 95vw);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 10px 15px;
+        background: #1f2937;
+        border-radius: 10px;
+        font-weight: bold;
+    }
+
+    #score {
+        font-size: 22px;
+    }
+
+    canvas {
+        width: min(900px, 95vw);
+        height: auto;
+        border: 4px solid white;
+        border-radius: 10px;
+        background: #16803c;
+        display: block;
+    }
+
+    #controls {
+        margin-top: 12px;
+        text-align: center;
+        color: #d1d5db;
+        line-height: 1.7;
+    }
+
+    button {
+        margin-top: 10px;
+        padding: 10px 22px;
+        border: 0;
+        border-radius: 8px;
+        background: #2563eb;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #1d4ed8;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>⚽ MINI FOOTBALL</h1>
+
+<div id="info">
+    <div id="score">골: 0</div>
+    <div id="timer">시간: 60</div>
+</div>
+
+<canvas id="game" width="900" height="550"></canvas>
+
+<div id="controls">
+    ⬆️⬇️⬅️➡️ 이동 &nbsp; | &nbsp; SPACE 슛
+    <br>
+    공을 골대 안으로 넣으세요!
+    <br>
+    <button onclick="restartGame()">다시 시작</button>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const scoreText = document.getElementById("score");
+const timerText = document.getElementById("timer");
+
+const keys = {};
+
+let score = 0;
+let timeLeft = 60;
+let gameOver = false;
+let lastTime = 0;
+
+const player = {
+    x: 450,
+    y: 400,
+    radius: 18,
+    speed: 4.5,
+    color: "#2563eb"
+};
+
+const ball = {
+    x: 450,
+    y: 350,
+    radius: 11,
+    vx: 0,
+    vy: 0,
+    friction: 0.985
+};
+
+const goal = {
+    x: 350,
+    y: 15,
+    width: 200,
+    height: 55
+};
+
+const goalkeeper = {
+    x: 450,
+    y: 82,
+    width: 80,
+    height: 18,
+    speed: 3.2,
+    direction: 1
+};
+
+document.addEventListener("keydown", e => {
+    keys[e.code] = true;
+
+    if (e.code === "Space") {
+        e.preventDefault();
+        shoot();
+    }
+
+    if (gameOver && e.code === "Enter") {
+        restartGame();
+    }
+});
+
+document.addEventListener("keyup", e => {
+    keys[e.code] = false;
+});
+
+function resetPositions() {
+    player.x = 450;
+    player.y = 420;
+
+    ball.x = 450;
+    ball.y = 365;
+    ball.vx = 0;
+    ball.vy = 0;
+
+    goalkeeper.x = 450;
+}
+
+function restartGame() {
+    score = 0;
+    timeLeft = 60;
+    gameOver = false;
+
+    resetPositions();
+
+    scoreText.textContent = "골: 0";
+    timerText.textContent = "시간: 60";
+
+    lastTime = performance.now();
+    requestAnimationFrame(gameLoop);
+}
+
+function shoot() {
+    if (gameOver) return;
+
+    const dx = ball.x - player.x;
+    const dy = ball.y - player.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < 55) {
+        let power = 11;
+
+        // 위쪽으로 강하게 슛
+        let angle = Math.atan2(dy, dx);
+
+        // 공이 골대 방향으로 날아가도록
+        if (dy > -20) {
+            angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.45;
+        }
+
+        ball.vx = Math.cos(angle) * power;
+        ball.vy = Math.sin(angle) * power;
+    }
+}
+
+function updatePlayer() {
+    let dx = 0;
+    let dy = 0;
+
+    if (keys["ArrowLeft"] || keys["KeyA"]) dx--;
+    if (keys["ArrowRight"] || keys["KeyD"]) dx++;
+    if (keys["ArrowUp"] || keys["KeyW"]) dy--;
+    if (keys["ArrowDown"] || keys["KeyS"]) dy++;
+
+    if (dx !== 0 || dy !== 0) {
+        const length = Math.sqrt(dx * dx + dy * dy);
+        dx /= length;
+        dy /= length;
+
+        player.x += dx * player.speed;
+        player.y += dy * player.speed;
+    }
+
+    // 경기장 밖으로 나가지 못하게
+    player.x = Math.max(30, Math.min(canvas.width - 30, player.x));
+    player.y = Math.max(100, Math.min(canvas.height - 30, player.y));
+}
+
+function updateBall() {
+    ball.x += ball.vx;
+    ball.y += ball.vy;
+
+    ball.vx *= ball.friction;
+    ball.vy *= ball.friction;
+
+    // 좌우 벽
+    if (ball.x - ball.radius < 20) {
+        ball.x = 20 + ball.radius;
+        ball.vx *= -0.7;
+    }
+
+    if (ball.x + ball.radius > canvas.width - 20) {
+        ball.x = canvas.width - 20 - ball.radius;
+        ball.vx *= -0.7;
+    }
+
+    // 아래쪽 벽
+    if (ball.y + ball.radius > canvas.height - 20) {
+        ball.y = canvas.height - 20 - ball.radius;
+        ball.vy *= -0.7;
+    }
+
+    // 공과 선수 충돌
+    const dx = ball.x - player.x;
+    const dy = ball.y - player.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < player.radius + ball.radius) {
+        const nx = dx / distance;
+        const ny = dy / distance;
+
+        ball.x = player.x + nx * (player.radius + ball.radius);
+        ball.y = player.y + ny * (player.radius + ball.radius);
+
+        ball.vx += nx * 1.2;
+        ball.vy += ny * 1.2;
+    }
+}
+
+function updateGoalkeeper() {
+    goalkeeper.x += goalkeeper.speed * goalkeeper.direction;
+
+    if (
+        goalkeeper.x - goalkeeper.width / 2 < goal.x ||
+        goalkeeper.x + goalkeeper.width / 2 > goal.x + goal.width
+    ) {
+        goalkeeper.direction *= -1;
+    }
+}
+
+function checkGoal() {
+    // 골대 안에 공이 들어왔는지
+    if (
+        ball.y - ball.radius < goal.y + goal.height &&
+        ball.x > goal.x &&
+        ball.x < goal.x + goal.width
+    ) {
+        // 골키퍼와 충돌하면 막힘
+        const keeperLeft = goalkeeper.x - goalkeeper.width / 2;
+        const keeperRight = goalkeeper.x + goalkeeper.width / 2;
+
+        if (
+            ball.x > keeperLeft - ball.radius &&
+            ball.x < keeperRight + ball.radius &&
+            ball.y > goalkeeper.y - goalkeeper.height / 2 &&
+            ball.y < goalkeeper.y + goalkeeper.height / 2
+        ) {
+            ball.vy = Math.abs(ball.vy) + 3;
+            ball.vx += goalkeeper.direction * 2;
+            ball.y = goalkeeper.y + goalkeeper.height / 2 + ball.radius;
+            return;
+        }
+
+        score++;
+        scoreText.textContent = "골: " + score;
+
+        resetPositions();
+    }
+}
+
+function updateTimer(delta) {
+    timeLeft -= delta / 1000;
+
+    if (timeLeft <= 0) {
+        timeLeft = 0;
+        gameOver = true;
+    }
+
+    timerText.textContent = "시간: " + Math.ceil(timeLeft);
+}
+
+function drawField() {
+    // 잔디
+    ctx.fillStyle = "#16803c";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 잔디 줄무늬
+    for (let i = 0; i < canvas.width; i += 100) {
+        ctx.fillStyle = "rgba(255,255,255,0.035)";
+        ctx.fillRect(i, 0, 50, canvas.height);
+    }
+
+    // 경기장 외곽
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+    // 센터라인
+    ctx.beginPath();
+    ctx.moveTo(20, canvas.height / 2);
+    ctx.lineTo(canvas.width - 20, canvas.height / 2);
+    ctx.stroke();
+
+    // 센터 서클
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, 70, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 센터 점
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, 4, 0, Math.PI * 2);
+    ctx.fillStyle = "white";
+    ctx.fill();
+
+    // 페널티 박스
+    ctx.strokeRect(260, 20, 380, 150);
+
+    // 골대
+    ctx.fillStyle = "white";
+    ctx.fillRect(goal.x, goal.y, goal.width, goal.height);
+
+    ctx.fillStyle = "#333";
+    ctx.fillRect(goal.x + 7, goal.y + 7, goal.width - 14, goal.height - 7);
+
+    // 골망
+    ctx.strokeStyle = "rgba(255,255,255,0.35)";
+    ctx.lineWidth = 1;
+
+    for (let x = goal.x; x <= goal.x + goal.width; x += 20) {
+        ctx.beginPath();
+        ctx.moveTo(x, goal.y);
+        ctx.lineTo(x, goal.y + goal.height);
+        ctx.stroke();
+    }
+
+    for (let y = goal.y; y <= goal.y + goal.height; y += 15) {
+        ctx.beginPath();
+        ctx.moveTo(goal.x, y);
+        ctx.lineTo(goal.x + goal.width, y);
+        ctx.stroke();
+    }
+}
+
+function drawPlayer() {
+    // 그림자
+    ctx.beginPath();
+    ctx.ellipse(
+        player.x,
+        player.y + 18,
+        20,
+        7,
+        0,
+        0,
+        Math.PI * 2
+    );
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.fill();
+
+    // 선수
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+    ctx.fillStyle = player.color;
+    ctx.fill();
+
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // 등번호
+    ctx.fillStyle = "white";
+    ctx.font = "bold 13px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("10", player.x, player.y);
+}
+
+function drawBall() {
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    ctx.fillStyle = "white";
+    ctx.fill();
+
+    ctx.strokeStyle = "#111";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 공 무늬
+    ctx.fillStyle = "#222";
+
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    for (let i = 0; i < 5; i++) {
+        const angle = i * Math.PI * 2 / 5;
+        ctx.beginPath();
+        ctx.arc(
+            ball.x + Math.cos(angle) * 7,
+            ball.y + Math.sin(angle) * 7,
+            2,
+            0,
+            Math.PI * 2
+        );
+        ctx.fill();
+    }
+}
+
+function drawGoalkeeper() {
+    ctx.fillStyle = "#dc2626";
+    ctx.fillRect(
+        goalkeeper.x - goalkeeper.width / 2,
+        goalkeeper.y - goalkeeper.height / 2,
+        goalkeeper.width,
+        goalkeeper.height
+    );
+
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(
+        goalkeeper.x - goalkeeper.width / 2,
+        goalkeeper.y - goalkeeper.height / 2,
+        goalkeeper.width,
+        goalkeeper.height
+    );
+}
+
+function drawGameOver() {
+    if (!gameOver) return;
+
+    ctx.fillStyle = "rgba(0,0,0,0.65)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+
+    ctx.font = "bold 48px Arial";
+    ctx.fillText("경기 종료!", canvas.width / 2, 230);
+
+    ctx.font = "bold 32px Arial";
+    ctx.fillText(
+        "최종 득점: " + score,
+        canvas.width / 2,
+        285
+    );
+
+    ctx.font = "20px Arial";
+    ctx.fillText(
+        "Enter 또는 다시 시작 버튼",
+        canvas.width / 2,
+        330
+    );
+}
+
+function draw() {
+    drawField();
+    drawGoalkeeper();
+    drawPlayer();
+    drawBall();
+    drawGameOver();
+}
+
+function gameLoop(timestamp) {
+    if (!lastTime) lastTime = timestamp;
+
+    const delta = timestamp - lastTime;
+    lastTime = timestamp;
+
+    if (!gameOver) {
+        updatePlayer();
+        updateBall();
+        updateGoalkeeper();
+        checkGoal();
+        updateTimer(delta);
+    }
+
+    draw();
+
+    if (!gameOver) {
+        requestAnimationFrame(gameLoop);
+    }
+}
+
+// 시작
+restartGame();
+
+</script>
+
+</body>
+</html>
